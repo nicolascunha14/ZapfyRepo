@@ -1,0 +1,104 @@
+"use client";
+
+import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+
+type SatelliteConfig = {
+  icon: LucideIcon;
+  position: string; // Tailwind absolute positioning classes
+  size: number;
+  delay: number;
+};
+
+type OnboardingSlideProps = {
+  gradient: string;
+  icon: LucideIcon;
+  satellites: SatelliteConfig[];
+  title: string;
+  description: string;
+};
+
+export function OnboardingSlide({
+  gradient,
+  icon: MainIcon,
+  satellites,
+  title,
+  description,
+}: OnboardingSlideProps) {
+  return (
+    <div className="h-dvh w-full flex flex-col">
+      {/* Top gradient area with illustration */}
+      <div
+        className={`relative flex-1 bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}
+        style={{ minHeight: "55dvh" }}
+      >
+        {/* Decorative circles in background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/5" />
+          <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-white/5" />
+          <div className="absolute top-1/3 right-10 w-24 h-24 rounded-full bg-white/5" />
+        </div>
+
+        {/* Main illustration */}
+        <div className="relative">
+          {/* Main icon container */}
+          <motion.div
+            className="w-32 h-32 rounded-[2rem] bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"
+            animate={{ y: [0, -10, 0] }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <MainIcon size={72} className="text-white" strokeWidth={1.5} />
+          </motion.div>
+
+          {/* Satellite icons */}
+          {satellites.map((sat, i) => {
+            const SatIcon = sat.icon;
+            return (
+              <motion.div
+                key={i}
+                className={`absolute ${sat.position} bg-white/25 backdrop-blur-sm rounded-xl p-2 shadow-md`}
+                animate={{
+                  y: [0, -8, 0],
+                  scale: [0.95, 1.08, 0.95],
+                  rotate: [0, i % 2 === 0 ? 10 : -10, 0],
+                }}
+                transition={{
+                  duration: 2.5 + i * 0.3,
+                  repeat: Infinity,
+                  delay: sat.delay,
+                  ease: "easeInOut",
+                }}
+              >
+                <SatIcon size={sat.size} className="text-white" />
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom white area with text */}
+      <div className="bg-white px-6 pt-8 pb-6 flex flex-col items-center text-center">
+        <motion.h2
+          className="text-2xl md:text-3xl font-display font-bold text-foreground"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+        >
+          {title}
+        </motion.h2>
+        <motion.p
+          className="text-muted-foreground text-base md:text-lg max-w-sm mx-auto leading-relaxed mt-3"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          {description}
+        </motion.p>
+      </div>
+    </div>
+  );
+}
