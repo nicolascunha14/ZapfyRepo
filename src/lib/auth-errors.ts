@@ -6,7 +6,7 @@ const ERROR_MAP: Record<string, string> = {
   invalid_grant: "E-mail ou senha incorretos.",
   // Signup errors
   user_already_exists: "Já existe uma conta com este e-mail.",
-  weak_password: "A senha é muito fraca. Use pelo menos 6 caracteres.",
+  weak_password: "A senha é muito fraca. Use pelo menos 8 caracteres.",
   // Rate limiting
   over_request_rate_limit: "Muitas tentativas. Aguarde um momento antes de tentar novamente.",
   over_email_send_rate_limit: "Muitos e-mails enviados. Aguarde alguns minutos.",
@@ -57,7 +57,7 @@ export function getAuthErrorMessage(error: unknown): string {
       return "Já existe uma conta com este e-mail.";
     }
     if (msg.includes("password") && msg.includes("weak")) {
-      return "A senha é muito fraca. Use pelo menos 6 caracteres.";
+      return "A senha é muito fraca. Use pelo menos 8 caracteres.";
     }
     if (msg.includes("rate") || msg.includes("too many")) {
       return "Muitas tentativas. Aguarde um momento antes de tentar novamente.";

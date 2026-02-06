@@ -37,7 +37,7 @@ const SLIDES = [
     ],
     title: "Bem-vindo ao Zapfy!",
     description:
-      "A aventura financeira do seu filho comeca aqui. Missoes divertidas para aprender sobre dinheiro!",
+      "A aventura financeira do seu filho começa aqui. Missões divertidas para aprender sobre dinheiro!",
   },
   {
     gradient: "from-amber-400 to-orange-500",
@@ -49,7 +49,7 @@ const SLIDES = [
     ],
     title: "Aprenda sobre dinheiro",
     description:
-      "Missoes interativas ensinam educacao financeira de forma ludica e pratica.",
+      "Missões interativas ensinam educação financeira de forma lúdica e prática.",
   },
   {
     gradient: "from-zapfy-mint to-emerald-500",
@@ -61,7 +61,7 @@ const SLIDES = [
     ],
     title: "Ganhe pontos",
     description:
-      "Cada missao completada rende Zap Coins. Acumule pontos e suba de nivel!",
+      "Cada missão completada rende Zap Coins. Acumule pontos e suba de nível!",
   },
   {
     gradient: "from-indigo-500 to-violet-500",
@@ -73,7 +73,7 @@ const SLIDES = [
     ],
     title: "Suba no ranking",
     description:
-      "Compare seu progresso com outras criancas e conquiste o topo do ranking!",
+      "Compare seu progresso com outras crianças e conquiste o topo do ranking!",
   },
 ];
 
@@ -161,7 +161,7 @@ export function OnboardingFlow() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError("Sessao expirada. Faca login novamente.");
+        setError("Sessão expirada. Faça login novamente.");
         setIsSubmitting(false);
         return;
       }
@@ -207,9 +207,9 @@ export function OnboardingFlow() {
         if (insertError) {
           const msg =
             insertError.code === "42501"
-              ? "Permissao negada. Tente fazer login novamente."
+              ? "Permissão negada. Tente fazer login novamente."
               : insertError.code === "23505"
-                ? "Registro ja existe."
+                ? "Registro já existe."
                 : `Erro ao salvar: ${insertError.message}`;
           setError(msg);
           setIsSubmitting(false);
@@ -227,7 +227,21 @@ export function OnboardingFlow() {
         return;
       }
 
-      router.push("/dashboard");
+      // Fetch the first mission for the child's age group to redirect to it
+      const { data: firstMission } = await supabase
+        .from("missions")
+        .select("id")
+        .eq("age_group", ageGroup)
+        .order("display_order", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (firstMission) {
+        router.push(`/dashboard/mission/${firstMission.id}`);
+      } else {
+        // Fallback to dashboard if no missions found
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch (err) {
       const message =

@@ -4,13 +4,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { User, Loader2 } from "lucide-react";
+import { User, Loader2, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const childFormSchema = z.object({
   name: z.string().min(2, "O nome precisa ter pelo menos 2 caracteres."),
   ageGroup: z.enum(["7-9", "10-12", "13-15"], {
-    message: "Selecione a faixa etaria.",
+    message: "Selecione a faixa etária.",
   }),
 });
 
@@ -21,19 +21,19 @@ const ageGroupOptions = [
     value: "7-9" as const,
     label: "7 a 9 anos",
     emoji: "🌱",
-    description: "Conceitos basicos",
+    description: "Conceitos básicos",
   },
   {
     value: "10-12" as const,
     label: "10 a 12 anos",
     emoji: "🌿",
-    description: "Intermediario",
+    description: "Intermediário",
   },
   {
     value: "13-15" as const,
     label: "13 a 15 anos",
     emoji: "🌳",
-    description: "Avancado",
+    description: "Avançado",
   },
 ];
 
@@ -81,7 +81,7 @@ export function SlideChildForm({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          Sobre a crianca
+          Sobre a criança
         </motion.h2>
         <motion.p
           className="text-white/80 text-sm mt-1"
@@ -89,7 +89,7 @@ export function SlideChildForm({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          Personalize a experiencia
+          Personalize a experiência
         </motion.p>
       </div>
 
@@ -115,14 +115,14 @@ export function SlideChildForm({
           >
             <label
               htmlFor="childName"
-              className="text-sm font-medium text-foreground"
+              className="text-sm font-semibold text-foreground"
             >
-              Nome da crianca
+              Nome da criança
             </label>
             <input
               id="childName"
-              placeholder="Ex: Maria, Joao..."
-              className="w-full h-12 rounded-xl border-2 border-border bg-white px-4 text-base font-medium
+              placeholder="Ex: Maria, João..."
+              className="w-full h-13 rounded-2xl border-2 border-border bg-white px-4 text-base font-medium
                          focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
               {...register("name")}
             />
@@ -138,8 +138,8 @@ export function SlideChildForm({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <label className="text-sm font-medium text-foreground">
-              Faixa etaria
+            <label className="text-sm font-semibold text-foreground">
+              Faixa etária
             </label>
             <div className="grid gap-3">
               {ageGroupOptions.map((option, i) => (
@@ -219,10 +219,13 @@ export function SlideChildForm({
               {isSubmitting ? (
                 <>
                   <Loader2 size={22} className="animate-spin" />
-                  Aguarde...
+                  Preparando sua primeira missão...
                 </>
               ) : (
-                "Comecar aventura!"
+                <>
+                  <Rocket size={22} />
+                  Começar aventura!
+                </>
               )}
             </button>
           </motion.div>

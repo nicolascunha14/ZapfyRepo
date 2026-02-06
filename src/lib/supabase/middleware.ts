@@ -59,17 +59,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Onboarding gating
+  // Onboarding gating — applies to all protected routes
   if (user) {
     const onboardingCompleted =
       user.user_metadata?.onboarding_completed === true;
 
     // User hasn't completed onboarding → redirect to /onboarding
+    // Gate ALL protected routes except /onboarding itself and /update-password
     if (
       !onboardingCompleted &&
       !isOnboardingRoute &&
-      (pathname.startsWith("/dashboard") || pathname.startsWith("/ranking") || pathname.startsWith("/profile"))
+      !pathname.startsWith("/update-password") &&
+      isProtectedRoute
     ) {
+      console.log("[middleware] Onboarding not completed, redirecting to /onboarding from:", pathname, "metadata:", user.user_metadata?.onboarding_completed);
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
       return NextResponse.redirect(url);
@@ -77,6 +80,7 @@ export async function updateSession(request: NextRequest) {
 
     // User already completed onboarding → redirect away from /onboarding
     if (onboardingCompleted && isOnboardingRoute) {
+      console.log("[middleware] Onboarding completed, redirecting to /dashboard from /onboarding");
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

@@ -19,6 +19,12 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
+  // Safety net: if onboarding not completed, redirect to onboarding
+  if (user.user_metadata?.onboarding_completed !== true) {
+    console.log("[protected/layout] User has not completed onboarding, redirecting. user_metadata:", user.user_metadata);
+    redirect("/onboarding");
+  }
+
   const [{ data: child }, { data: profile }] = await Promise.all([
     supabase
       .from("children")
