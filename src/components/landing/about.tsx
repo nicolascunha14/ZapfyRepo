@@ -14,21 +14,26 @@ export function About() {
       icon: <BookOpen className="w-8 h-8 text-white" />,
       title: "Educação Prática",
       description:
-        "Conceitos financeiros reais traduzidos para a linguagem das crianças. Sem termos complicados, só aprendizado que fica pra vida.",
+        'Não é teoria abstrata: "o que são juros compostos?" É prática do dia a dia: "quanto custa seu lanche favorito?" Aprende fazendo. Usa no mesmo dia.',
     },
     {
       icon: <Shield className="w-8 h-8 text-white" />,
       title: "Ambiente Seguro",
       description:
-        "Seu filho aprende sem riscos: sem cartões reais, sem compras, sem exposição. Apenas diversão educativa com total controle dos pais.",
+        "Zero riscos. Zero exposição. Sem cartões reais, sem compras, sem dados bancários. Apenas diversão educativa com total controle dos pais.",
     },
     {
       icon: <Trophy className="w-8 h-8 text-white" />,
       title: "Resultados Reais",
       description:
-        "Em 30 dias, você verá mudanças: crianças fazendo perguntas inteligentes sobre dinheiro e tomando decisões mais conscientes.",
+        'Em 2 semanas, você vai notar: "Quanto falta para comprar aquilo?" "Isso vale o preço que custa?" Menos birra, mais consciência.',
     },
   ];
+
+  const scrollToDemo = () => {
+    const el = document.getElementById("demo");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <section className="section-padding bg-muted/30 relative overflow-hidden">
@@ -50,12 +55,13 @@ export function About() {
 
             <StaggerItem>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                Sabemos que você quer ensinar seu filho sobre dinheiro, mas não
-                sabe por onde começar. A Zapfy nasceu dessa mesma dor: pais que
-                queriam preparar seus filhos para o futuro financeiro, mas
-                encontravam apenas conteúdo chato e inacessível. Criamos uma
-                solução simples, divertida e que realmente funciona — construída
-                ouvindo centenas de famílias reais como a sua.
+                Você quer ensinar seu filho sobre dinheiro, mas não sabe como
+                começar.
+                <br />
+                <br />
+                Nós também não sabíamos. Por isso criamos a Zapfy: uma solução
+                simples, divertida e que realmente funciona — testada com
+                centenas de famílias reais.
               </p>
             </StaggerItem>
           </StaggerContainer>
@@ -71,13 +77,21 @@ export function About() {
                 <div className="w-3 h-3 bg-zapfy-mint rounded-full animate-pulse" />
                 <div className="w-3 h-3 bg-zapfy-coin rounded-full animate-pulse" />
               </div>
-              <p className="text-lg font-display font-semibold text-center mb-2">
-                &ldquo;Finalmente encontrei algo que meu filho QUER
-                fazer!&rdquo;
+              <p className="text-lg font-display font-semibold text-center mb-2 italic">
+                &quot;Meu filho de 9 anos me perguntou se o brinquedo &apos;valia
+                mesmo R$80&apos;. Nunca pensei que seria TÃO rápido.&quot;
               </p>
               <p className="text-sm text-muted-foreground text-center">
-                — Mariana, mãe de Lucas (9 anos) e Sofia (12 anos)
+                — Mariana, mãe do Lucas (9 anos)
               </p>
+            </div>
+          </ScrollAnimation>
+
+          <ScrollAnimation animation="fadeUp" delay={0.4}>
+            <div className="text-center">
+              <button onClick={scrollToDemo} className="btn-outline-zapfy">
+                Veja Como Funciona
+              </button>
             </div>
           </ScrollAnimation>
         </div>

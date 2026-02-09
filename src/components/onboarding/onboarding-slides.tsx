@@ -27,10 +27,10 @@ export function OnboardingSlide({
 }: OnboardingSlideProps) {
   return (
     <div className="h-dvh w-full flex flex-col">
-      {/* Top gradient area with illustration */}
+      {/* Top gradient area with illustration — capped so text always has room */}
       <div
-        className={`relative flex-1 bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}
-        style={{ minHeight: "55dvh" }}
+        className={`relative bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}
+        style={{ height: "50dvh" }}
       >
         {/* Decorative circles in background */}
         <div className="absolute inset-0 overflow-hidden">
@@ -43,7 +43,7 @@ export function OnboardingSlide({
         <div className="relative">
           {/* Main icon container */}
           <motion.div
-            className="w-32 h-32 rounded-[2rem] bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"
+            className="w-28 h-28 rounded-[1.75rem] bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg"
             animate={{ y: [0, -10, 0] }}
             transition={{
               duration: 3,
@@ -51,7 +51,7 @@ export function OnboardingSlide({
               ease: "easeInOut",
             }}
           >
-            <MainIcon size={72} className="text-white" strokeWidth={1.5} />
+            <MainIcon size={60} className="text-white" strokeWidth={1.5} />
           </motion.div>
 
           {/* Satellite icons */}
@@ -80,8 +80,8 @@ export function OnboardingSlide({
         </div>
       </div>
 
-      {/* Bottom white area with text */}
-      <div className="bg-white px-6 pt-8 pb-6 flex flex-col items-center text-center">
+      {/* Bottom white area with text — pb-36 leaves room for the fixed bottom overlay */}
+      <div className="flex-1 bg-white px-6 pt-6 pb-36 flex flex-col items-center justify-start text-center">
         <motion.h2
           className="text-2xl md:text-3xl font-display font-bold text-foreground"
           initial={{ opacity: 0, y: 15 }}

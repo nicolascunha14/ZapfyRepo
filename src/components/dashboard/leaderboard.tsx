@@ -14,11 +14,11 @@ type RankedChild = {
   total_points: number;
 };
 
-const AGE_BADGE: Record<string, { label: string; bg: string; text: string }> = {
-  "7-9": { label: "7-9", bg: "bg-emerald-100", text: "text-emerald-700" },
-  "10-12": { label: "10-12", bg: "bg-primary-100", text: "text-primary-700" },
-  "13-15": { label: "13-15", bg: "bg-violet-100", text: "text-violet-700" },
-};
+const AGE_TABS = [
+  { key: "7-9", label: "7-9 anos", color: "bg-emerald-500", ring: "ring-emerald-200" },
+  { key: "10-12", label: "10-12 anos", color: "bg-primary-500", ring: "ring-primary-200" },
+  { key: "13-15", label: "13-15 anos", color: "bg-violet-500", ring: "ring-violet-200" },
+] as const;
 
 function MedalIcon({ position }: { position: number }) {
   if (position === 1) {
@@ -62,7 +62,6 @@ function RankRow({
   isCurrentUser: boolean;
   index: number;
 }) {
-  const badge = AGE_BADGE[child.age_group] ?? AGE_BADGE["7-9"];
   const level = getLevel(child.total_points);
 
   return (
@@ -96,16 +95,9 @@ function RankRow({
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span
-              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${badge.bg} ${badge.text}`}
-            >
-              {badge.label} anos
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {level.name}
-            </span>
-          </div>
+          <span className="text-xs text-muted-foreground">
+            {level.name}
+          </span>
         </div>
 
         <div className="text-right shrink-0">
@@ -120,22 +112,26 @@ function RankRow({
 }
 
 export function Leaderboard({
-  initialRanking,
+  rankingByAge,
   currentChildId,
+  currentAgeGroup,
 }: {
-  initialRanking: RankedChild[];
+  rankingByAge: Record<string, RankedChild[]>;
   currentChildId: string | null;
+  currentAgeGroup: string;
 }) {
-  const [ranking, setRanking] = useState(initialRanking);
+  const [activeTab, setActiveTab] = useState(currentAgeGroup);
+  const [rankings, setRankings] = useState(rankingByAge);
 
-  // Find current user's position
+  const ranking = rankings[activeTab] ?? [];
+  const top10 = ranking.slice(0, 10);
+
   const currentUserIndex = ranking.findIndex((c) => c.id === currentChildId);
   const currentUserPosition = currentUserIndex >= 0 ? currentUserIndex + 1 : null;
   const currentUser = currentUserIndex >= 0 ? ranking[currentUserIndex] : null;
   const isInTop10 = currentUserPosition !== null && currentUserPosition <= 10;
 
-  const top10 = ranking.slice(0, 10);
-
+  // Real-time updates
   useEffect(() => {
     const supabase = createClient();
 
@@ -150,13 +146,18 @@ export function Leaderboard({
         },
         (payload) => {
           const updated = payload.new as RankedChild;
-          setRanking((prev) => {
-            const next = prev.map((c) =>
+          setRankings((prev) => {
+            const ageGroup = updated.age_group;
+            if (!prev[ageGroup]) return prev;
+            const next = prev[ageGroup].map((c) =>
               c.id === updated.id
                 ? { ...c, total_points: updated.total_points ?? c.total_points }
                 : c
             );
-            return next.sort((a, b) => b.total_points - a.total_points);
+            return {
+              ...prev,
+              [ageGroup]: next.sort((a, b) => b.total_points - a.total_points),
+            };
           });
         }
       )
@@ -169,6 +170,35 @@ export function Leaderboard({
 
   return (
     <div className="space-y-4">
+      {/* Age group tabs */}
+      <div className="flex gap-2">
+        {AGE_TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
+          const count = (rankings[tab.key] ?? []).length;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-bold transition-all cursor-pointer ${
+                isActive
+                  ? `${tab.color} text-white shadow-md ring-2 ${tab.ring}`
+                  : "bg-white border border-border/50 text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {tab.label}
+              <span
+                className={`ml-1.5 text-[10px] font-medium ${
+                  isActive ? "text-white/70" : "text-muted-foreground/60"
+                }`}
+              >
+                ({count})
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Top 3 podium */}
       {top10.length >= 3 && (
         <div className="grid grid-cols-3 gap-2 mb-2">
@@ -234,8 +264,15 @@ export function Leaderboard({
       )}
 
       {/* Full ranking list */}
-      <AnimatePresence>
-        <div className="space-y-2">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-2"
+        >
           {top10.map((child, i) => (
             <RankRow
               key={child.id}
@@ -245,11 +282,11 @@ export function Leaderboard({
               index={i}
             />
           ))}
-        </div>
+        </motion.div>
       </AnimatePresence>
 
       {/* Current user not in top 10 */}
-      {!isInTop10 && currentUser && currentUserPosition && (
+      {!isInTop10 && currentUser && currentUserPosition && activeTab === currentAgeGroup && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -257,7 +294,7 @@ export function Leaderboard({
         >
           <div className="border-t border-dashed border-border pt-4">
             <p className="text-xs text-muted-foreground text-center mb-2">
-              Sua posicao no ranking
+              Sua posição no ranking
             </p>
             <RankRow
               child={currentUser}
@@ -274,8 +311,7 @@ export function Leaderboard({
         <div className="text-center py-12">
           <Trophy size={48} className="mx-auto text-muted-foreground/30 mb-4" />
           <p className="text-muted-foreground">
-            Nenhum jogador no ranking ainda. Complete missoes para aparecer
-            aqui!
+            Nenhum jogador nesta faixa etária ainda. Complete missões para aparecer aqui!
           </p>
         </div>
       )}

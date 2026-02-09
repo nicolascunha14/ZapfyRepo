@@ -26,6 +26,8 @@ export type CompletedMission = {
   completed_at: string;
 };
 
+export const REFERRAL_BONUS_POINTS = 50;
+
 export const LEVELS = [
   { level: 1, name: "Iniciante", minPoints: 0 },
   { level: 2, name: "Explorador", minPoints: 100 },

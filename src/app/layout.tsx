@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito, Montserrat } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${nunito.variable} ${montserrat.variable} font-sans antialiased`}
       >
         {children}
+        <Analytics />
         <Toaster richColors position="top-right" />
       </body>
     </html>

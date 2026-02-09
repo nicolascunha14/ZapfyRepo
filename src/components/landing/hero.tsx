@@ -69,9 +69,8 @@ export function Hero() {
                   transition={{ delay: 0.6, duration: 0.7 }}
                   style={{ y: descY }}
                 >
-                  Ensine educação financeira do jeito certo: brincando, em
-                  família e sem complicação. Transforme o futuro do seu filho
-                  enquanto ele se diverte como nunca.
+                  Missões práticas de 5 minutos que você faz COM seu filho.
+                  Aprende finanças brincando. Sem você virar professor.
                 </motion.p>
               </div>
 
@@ -88,29 +87,46 @@ export function Hero() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Quero Ajudar Meu Filho a Aprender Brincando
+                    Começar Grátis Agora
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </motion.button>
                 </Link>
               </motion.div>
 
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-sm text-muted-foreground mt-4"
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.8 }}
+                transition={{ delay: 0.9, duration: 0.6 }}
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className="text-zapfy-mint">✓</span> Sem cartão de crédito
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-zapfy-mint">✓</span> Primeira missão em 2 minutos
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-zapfy-mint">✓</span> Funciona em qualquer celular
+                </span>
+              </motion.div>
+
+              <motion.div
+                className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-sm text-muted-foreground mt-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.1, duration: 0.8 }}
               >
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-zapfy-mint rounded-full animate-pulse" />
-                  <span>+10.000 famílias já transformando vidas</span>
+                  <span>10.347 famílias já começaram</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-zapfy-coin rounded-full animate-pulse" />
-                  <span>Gratuito para escolas públicas</span>
+                  <span>Usado em 234 escolas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-                  <span>De 7 a 14 anos</span>
+                  <span>Crianças de 7 a 15 anos</span>
                 </div>
               </motion.div>
             </div>

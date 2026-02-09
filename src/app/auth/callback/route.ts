@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next");
+  const referralCode = searchParams.get("ref");
 
   console.log("[auth/callback] START", { code: code ? "present" : "missing", next });
 
@@ -57,36 +58,78 @@ export async function GET(request: Request) {
       { onConflict: "id" }
     );
 
-    // ALWAYS check onboarding status — never skip based on `next` param
-    if (meta?.onboarding_completed === true) {
-      redirectTo = next ?? "/dashboard";
-      console.log("[auth/callback] Onboarding already done → redirecting to:", redirectTo);
-    } else {
-      // Check if child record exists (recovery for users with child but missing flag)
-      const { data: child } = await supabase
-        .from("children")
+    // Process referral if present (from OAuth or metadata)
+    const refCode = referralCode || meta?.referral_code;
+    if (refCode) {
+      // Check if this user was already referred
+      const { data: existingReferral } = await supabase
+        .from("referrals")
         .select("id")
-        .eq("parent_id", data.user.id)
-        .limit(1)
-        .single();
+        .eq("referred_id", data.user.id)
+        .limit(1);
 
-      if (child) {
-        // Fix metadata flag for future logins
+      if (!existingReferral || existingReferral.length === 0) {
+        const { data: referrer } = await supabase
+          .from("users")
+          .select("id")
+          .eq("referral_code", refCode)
+          .single();
+
+        if (referrer && referrer.id !== data.user.id) {
+          await supabase.from("referrals").insert({
+            referrer_id: referrer.id,
+            referred_id: data.user.id,
+          });
+
+          // Award points to referrer's child
+          const { data: referrerChild } = await supabase
+            .from("children")
+            .select("id, total_points")
+            .eq("parent_id", referrer.id)
+            .limit(1)
+            .single();
+
+          if (referrerChild) {
+            await supabase
+              .from("children")
+              .update({ total_points: (referrerChild.total_points ?? 0) + 50 })
+              .eq("id", referrerChild.id);
+
+            await supabase
+              .from("referrals")
+              .update({ points_awarded: true })
+              .eq("referred_id", data.user.id);
+          }
+
+          console.log("[auth/callback] Referral processed for code:", refCode);
+        }
+      }
+    }
+
+    // ALWAYS check for child record — this is the source of truth for onboarding status
+    const { data: child } = await supabase
+      .from("children")
+      .select("id")
+      .eq("parent_id", data.user.id)
+      .limit(1)
+      .single();
+
+    if (child) {
+      // Child exists — user has completed onboarding
+      if (meta?.onboarding_completed !== true) {
         await supabase.auth.updateUser({
           data: { onboarding_completed: true },
         });
-        redirectTo = next ?? "/dashboard";
-        console.log("[auth/callback] Child found, flag fixed → redirecting to:", redirectTo);
-      } else {
-        // New user — force onboarding regardless of `next` param
-        if (meta?.onboarding_completed === undefined || meta?.onboarding_completed === null) {
-          await supabase.auth.updateUser({
-            data: { onboarding_completed: false },
-          });
-        }
-        redirectTo = "/onboarding";
-        console.log("[auth/callback] No child, no onboarding → forcing /onboarding");
       }
+      redirectTo = next ?? "/dashboard";
+      console.log("[auth/callback] Child found → redirecting to:", redirectTo);
+    } else {
+      // No child record — user must complete onboarding regardless of metadata flag
+      await supabase.auth.updateUser({
+        data: { onboarding_completed: false },
+      });
+      redirectTo = "/onboarding";
+      console.log("[auth/callback] No child record → forcing /onboarding");
     }
   }
 

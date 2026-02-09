@@ -61,15 +61,23 @@ export function MissionsList({
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {missions.map((mission) => (
-          <MissionCard
-            key={mission.id}
-            mission={mission}
-            childId={childId}
-            isCompleted={completedIds.has(mission.id)}
-            onComplete={handleComplete}
-          />
-        ))}
+        {missions.map((mission, index) => {
+          const isCompleted = completedIds.has(mission.id);
+          // First mission is always unlocked; others require the previous one to be completed
+          const isLocked =
+            index > 0 && !completedIds.has(missions[index - 1].id);
+
+          return (
+            <MissionCard
+              key={mission.id}
+              mission={mission}
+              childId={childId}
+              isCompleted={isCompleted}
+              isLocked={isLocked}
+              onComplete={handleComplete}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -7,7 +7,13 @@ export const metadata: Metadata = {
   title: "Criar Conta - Zapfy",
 };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>;
+}) {
+  const { ref } = await searchParams;
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -19,7 +25,7 @@ export default function SignupPage() {
         </p>
       </div>
 
-      <OAuthButtons />
+      <OAuthButtons referralCode={ref} />
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -32,7 +38,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <SignupForm />
+      <SignupForm referralCode={ref} />
 
       <p className="text-center text-sm text-muted-foreground">
         Já tem uma conta?{" "}

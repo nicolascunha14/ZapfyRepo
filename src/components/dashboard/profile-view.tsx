@@ -13,11 +13,17 @@ import {
   Calendar,
   LogOut,
   ChevronRight,
+  Gift,
+  Copy,
+  CheckCircle2,
+  Users,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { getLevel } from "@/lib/types";
+import { computeBadges, BADGES } from "@/lib/badges";
+import { Lock, Award } from "lucide-react";
 
 type CompletedMissionWithDetails = {
   id: string;
@@ -58,6 +64,9 @@ export function ProfileView({
   totalPoints,
   completedMissions,
   totalMissions,
+  referralCode,
+  referralCount,
+  currentStreak,
 }: {
   childId: string;
   initialName: string;
@@ -65,12 +74,16 @@ export function ProfileView({
   totalPoints: number;
   completedMissions: CompletedMissionWithDetails[];
   totalMissions: number;
+  referralCode: string;
+  referralCount: number;
+  currentStreak: number;
 }) {
   const [name, setName] = useState(initialName);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(initialName);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const level = getLevel(totalPoints);
   const completedCount = completedMissions.length;
@@ -263,6 +276,146 @@ export function ProfileView({
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Badges / Conquistas */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.17 }}
+      >
+        {(() => {
+          const badgeResults = computeBadges({
+            points: totalPoints,
+            completed: completedCount,
+            totalMissions,
+            streak: currentStreak,
+          });
+          const unlockedCount = badgeResults.filter((b) => b.unlocked).length;
+
+          return (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Award size={20} className="text-amber-500" />
+                  <h3 className="font-display font-bold text-lg">Conquistas</h3>
+                </div>
+                <span className="text-sm text-muted-foreground font-medium">
+                  {unlockedCount}/{BADGES.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {badgeResults.map((badge, i) => {
+                  const BadgeIcon = badge.icon;
+                  return (
+                    <motion.div
+                      key={badge.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 + i * 0.04 }}
+                    >
+                      <Card
+                        className={`transition-all ${
+                          badge.unlocked
+                            ? "ring-1 ring-amber-200 shadow-sm"
+                            : "opacity-40 grayscale"
+                        }`}
+                      >
+                        <CardContent className="pt-4 pb-3 text-center space-y-1.5">
+                          <motion.div
+                            className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center bg-gradient-to-br ${
+                              badge.unlocked ? badge.bg : "from-gray-100 to-gray-50"
+                            }`}
+                            whileHover={badge.unlocked ? { scale: 1.1, rotate: 5 } : {}}
+                          >
+                            {badge.unlocked ? (
+                              <BadgeIcon size={22} className={badge.color} />
+                            ) : (
+                              <Lock size={16} className="text-muted-foreground" />
+                            )}
+                          </motion.div>
+                          <p className="text-xs font-bold leading-tight">
+                            {badge.name}
+                          </p>
+                          <p className="text-[9px] text-muted-foreground leading-tight">
+                            {badge.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
+      </motion.div>
+
+      {/* Referral / Invite section */}
+      {referralCode && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+        >
+          <Card className="border-primary-200 bg-gradient-to-br from-primary-50 to-white">
+            <CardContent className="pt-6 pb-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary-100 rounded-xl p-2.5">
+                  <Gift size={22} className="text-primary-500" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-base">
+                    Convidar Amigos
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    +50 pontos por cada amigo que se cadastrar
+                  </p>
+                </div>
+              </div>
+
+              {/* Copy link */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-white border border-border rounded-xl px-3 py-2.5 text-xs text-muted-foreground truncate font-mono">
+                  {typeof window !== "undefined"
+                    ? `${window.location.origin}/signup?ref=${referralCode}`
+                    : `/signup?ref=${referralCode}`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const link = `${window.location.origin}/signup?ref=${referralCode}`;
+                    navigator.clipboard.writeText(link);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary-500 text-white text-xs font-semibold hover:bg-primary-600 transition-colors cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle2 size={14} />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} />
+                      Copiar
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Referral count */}
+              <div className="flex items-center gap-2 text-sm">
+                <Users size={16} className="text-primary-500" />
+                <span className="font-medium">
+                  {referralCount}{" "}
+                  {referralCount === 1 ? "amigo convidado" : "amigos convidados"}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Mission history */}
       <motion.div

@@ -15,6 +15,7 @@ import {
   Briefcase,
   ShoppingCart,
   TrendingUp,
+  Lock,
 } from "lucide-react";
 import type { Mission } from "@/lib/types";
 import { motion } from "framer-motion";
@@ -67,10 +68,12 @@ const THEME_CONFIG = {
 export function MissionCard({
   mission,
   isCompleted: initialCompleted,
+  isLocked = false,
 }: {
   mission: Mission;
   childId: string;
   isCompleted: boolean;
+  isLocked?: boolean;
   onComplete?: (missionId: string, points: number) => void;
 }) {
   const [isCompleted] = useState(initialCompleted);
@@ -87,7 +90,11 @@ export function MissionCard({
     >
       <Card
         className={`relative overflow-hidden transition-all ${
-          isCompleted ? "opacity-75" : ""
+          isCompleted
+            ? "opacity-75"
+            : isLocked
+              ? "opacity-50 grayscale"
+              : ""
         }`}
       >
         {/* Point badge */}
@@ -96,13 +103,20 @@ export function MissionCard({
             className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
               isCompleted
                 ? "bg-success/10 text-success"
-                : "bg-zapfy-coin/20 text-amber-700"
+                : isLocked
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-zapfy-coin/20 text-amber-700"
             }`}
           >
             {isCompleted ? (
               <>
                 <CheckCircle2 size={12} />
                 Concluída
+              </>
+            ) : isLocked ? (
+              <>
+                <Lock size={12} />
+                Bloqueada
               </>
             ) : (
               <>
@@ -116,14 +130,20 @@ export function MissionCard({
         <CardContent className="pt-6 pb-4 space-y-3">
           {/* Theme + title */}
           <div className="flex items-start gap-3 pr-20">
-            <div className={`${theme.bg} rounded-xl p-2.5 shrink-0`}>
-              <ThemeIcon size={20} className={theme.color} />
+            <div className={`${isLocked ? "bg-muted" : theme.bg} rounded-xl p-2.5 shrink-0`}>
+              {isLocked ? (
+                <Lock size={20} className="text-muted-foreground" />
+              ) : (
+                <ThemeIcon size={20} className={theme.color} />
+              )}
             </div>
             <div>
               <p className="font-display font-bold text-base leading-tight">
                 {mission.title}
               </p>
-              <span className={`text-xs ${theme.color} font-medium`}>
+              <span
+                className={`text-xs ${isLocked ? "text-muted-foreground" : theme.color} font-medium`}
+              >
                 {theme.label}
               </span>
             </div>
@@ -134,24 +154,28 @@ export function MissionCard({
             {mission.description}
           </p>
 
-          {/* Tips (collapsible) */}
-          <button
-            type="button"
-            onClick={() => setShowTips(!showTips)}
-            className="flex items-center gap-1.5 text-xs text-primary-500 hover:text-primary-600 font-medium cursor-pointer transition-colors"
-          >
-            <Lightbulb size={14} />
-            {showTips ? "Esconder dica" : "Ver dica"}
-          </button>
+          {/* Tips (collapsible) - hidden when locked */}
+          {!isLocked && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowTips(!showTips)}
+                className="flex items-center gap-1.5 text-xs text-primary-500 hover:text-primary-600 font-medium cursor-pointer transition-colors"
+              >
+                <Lightbulb size={14} />
+                {showTips ? "Esconder dica" : "Ver dica"}
+              </button>
 
-          {showTips && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="bg-primary-50 rounded-lg p-3 text-xs text-primary-700 leading-relaxed"
-            >
-              {mission.tips}
-            </motion.div>
+              {showTips && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="bg-primary-50 rounded-lg p-3 text-xs text-primary-700 leading-relaxed"
+                >
+                  {mission.tips}
+                </motion.div>
+              )}
+            </>
           )}
 
           {/* Action */}
@@ -159,6 +183,11 @@ export function MissionCard({
             <div className="flex items-center gap-2 mt-1 text-sm text-success font-medium">
               <CheckCircle2 size={16} />
               Missão completada!
+            </div>
+          ) : isLocked ? (
+            <div className="flex items-center justify-center gap-2 w-full mt-1 rounded-lg bg-muted px-4 py-2.5 text-muted-foreground font-display font-semibold text-sm">
+              <Lock size={16} />
+              Complete a missão anterior
             </div>
           ) : (
             <Link

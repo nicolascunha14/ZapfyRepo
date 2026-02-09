@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { User } from "lucide-react";
-import { ProfileView } from "@/components/dashboard/profile-view";
+import { BarChart3 } from "lucide-react";
+import { ParentDashboard } from "@/components/dashboard/parent-dashboard";
 
 export const metadata: Metadata = {
-  title: "Perfil - Zapfy",
+  title: "Painel dos Pais - Zapfy",
 };
 
-export default async function ProfilePage() {
+export default async function ParentPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,28 +31,7 @@ export default async function ProfilePage() {
     redirect("/onboarding");
   }
 
-  // Fetch referral data
-  const { data: userData } = await supabase
-    .from("users")
-    .select("referral_code")
-    .eq("id", user.id)
-    .single();
-
-  const { count: referralCount } = await supabase
-    .from("referrals")
-    .select("*", { count: "exact", head: true })
-    .eq("referrer_id", user.id);
-
-  // Fetch current streak (latest daily login)
-  const { data: latestLogin } = await supabase
-    .from("daily_logins")
-    .select("streak_count")
-    .eq("child_id", child.id)
-    .order("login_date", { ascending: false })
-    .limit(1)
-    .single();
-
-  // Count total missions for this age group
+  // Fetch total missions for this age group
   const { count: totalMissions } = await supabase
     .from("missions")
     .select("*", { count: "exact", head: true })
@@ -63,21 +42,21 @@ export default async function ProfilePage() {
     .from("completed_missions")
     .select("id, mission_id, points_earned, completed_at, missions(title, theme)")
     .eq("child_id", child.id)
-    .order("completed_at", { ascending: false });
+    .order("completed_at", { ascending: true });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-primary-100 rounded-xl p-2.5">
-            <User size={24} className="text-primary-500" />
+            <BarChart3 size={24} className="text-primary-500" />
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Perfil
+              Painel dos Pais
             </h1>
             <p className="text-sm text-muted-foreground">
-              Gerencie seu perfil e veja seu historico
+              Acompanhe o progresso do seu filho em tempo real
             </p>
           </div>
         </div>
@@ -89,16 +68,13 @@ export default async function ProfilePage() {
         </Link>
       </div>
 
-      <ProfileView
+      <ParentDashboard
         childId={child.id}
-        initialName={child.name}
+        childName={child.name}
         ageGroup={child.age_group}
-        totalPoints={child.total_points ?? 0}
+        initialPoints={child.total_points ?? 0}
         completedMissions={(completedMissions as any) ?? []}
         totalMissions={totalMissions ?? 0}
-        referralCode={userData?.referral_code ?? ""}
-        referralCount={referralCount ?? 0}
-        currentStreak={latestLogin?.streak_count ?? 0}
       />
     </div>
   );

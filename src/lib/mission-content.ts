@@ -10,6 +10,12 @@ export type StepMultipleChoice = {
   options: string[];
   correctIndex: number;
   explanation: string;
+  /** Optional visual to show above the question (e.g. a coin or note) */
+  highlight?: {
+    label: string;
+    value: string;
+    variant: "coin" | "note";
+  };
 };
 
 export type StepNumberInput = {
@@ -61,71 +67,141 @@ export const MISSION_CONTENT: Record<string, MissionContent> = {
 
   "conceitos_basicos-7-9": {
     steps: [
+      // ── Mini-aula ──
       {
         type: "intro",
         title: "O que é dinheiro?",
         description:
-          "Vamos aprender sobre as moedas e notas do Brasil! Dinheiro é usado para comprar coisas que precisamos e queremos.",
+          "Vamos descobrir para que serve o dinheiro e como ele funciona!",
       },
       {
         type: "tutorial",
-        title: "Moedas do Brasil",
+        title: "Para que serve o dinheiro?",
         description:
-          "Essas são as moedas brasileiras. Cada uma tem um valor diferente!",
-        items: [
-          { label: "1 centavo", value: "0,01", variant: "coin" },
-          { label: "5 centavos", value: "0,05", variant: "coin" },
-          { label: "10 centavos", value: "0,10", variant: "coin" },
-          { label: "25 centavos", value: "0,25", variant: "coin" },
-          { label: "50 centavos", value: "0,50", variant: "coin" },
-          { label: "1 real", value: "1,00", variant: "coin" },
-        ],
+          "Dinheiro é usado para pegar coisas que queremos ou precisamos. Quando você paga, o dinheiro sai. Por isso precisamos escolher bem!",
+        highlight: {
+          label: "Dinheiro",
+          value: "1,00",
+          variant: "coin",
+        },
       },
-      {
-        type: "tutorial",
-        title: "Notas do Brasil",
-        description:
-          "E essas são as notas! Elas valem mais que as moedas.",
-        items: [
-          { label: "2 reais", value: "2", variant: "note" },
-          { label: "5 reais", value: "5", variant: "note" },
-          { label: "10 reais", value: "10", variant: "note" },
-          { label: "20 reais", value: "20", variant: "note" },
-          { label: "50 reais", value: "50", variant: "note" },
-          { label: "100 reais", value: "100", variant: "note" },
-          { label: "200 reais", value: "200", variant: "note" },
-        ],
-      },
+
+      // ── M1 — O que dá pra comprar? ──
       {
         type: "multiple_choice",
-        question: "Qual é esta moeda?",
-        options: ["10 centavos", "50 centavos", "1 real"],
-        correctIndex: 2,
-        explanation:
-          "Isso mesmo! A moeda de 1 real é prateada com o centro dourado. É a moeda que mais vale!",
-      },
-      {
-        type: "number_input",
-        question:
-          "Você tem 3 moedas de 1 real. Quantos reais você tem no total?",
-        correctAnswer: 3,
-        tolerance: 0.01,
-        unit: "R$",
-        explanation:
-          "1 + 1 + 1 = 3 reais! Contar moedas é o primeiro passo para cuidar do dinheiro.",
-      },
-      {
-        type: "multiple_choice",
-        question: "Qual é a nota de 10 reais?",
-        options: [
-          "A nota verde com a arara",
-          "A nota azul com a bandeira",
-          "A nota vermelha com o papagaio",
-        ],
+        question: "O que dá pra comprar com dinheiro?",
+        options: ["🍎 Comida", "🪨 Pedra do chão", "☁️ Nuvem"],
         correctIndex: 0,
         explanation:
-          "A nota de 10 reais é verde e tem a imagem de uma arara. Ela vale o mesmo que 10 moedas de 1 real!",
+          "Isso! Comida é algo que a gente pode comprar. Pedras e nuvens não estão à venda!",
       },
+
+      // ── M2 — Dinheiro serve pra quê? ──
+      {
+        type: "multiple_choice",
+        question: "Dinheiro serve pra quê?",
+        options: ["Comprar coisas", "Brincar", "Desenhar"],
+        correctIndex: 0,
+        explanation:
+          "Dinheiro serve para comprar coisas que precisamos ou queremos!",
+      },
+
+      // ── M3 — Se você paga, o dinheiro… ──
+      {
+        type: "multiple_choice",
+        question: "Se você paga por algo, o seu dinheiro...",
+        options: ["Aumenta", "Diminui"],
+        correctIndex: 1,
+        explanation:
+          "Quando você paga, o dinheiro sai. Por isso é importante pensar antes de gastar!",
+      },
+
+      // ── M4 — Você tem 5 moedas, item custa 3 ──
+      {
+        type: "multiple_choice",
+        question:
+          "Você tem 5 moedas. Um brinquedo custa 3 moedas. Dá pra comprar?",
+        options: ["Sim!", "Não"],
+        correctIndex: 0,
+        explanation:
+          "Dá sim! Você tem 5 e precisa de 3. Ainda sobram 2 moedas!",
+        highlight: {
+          label: "Suas moedas",
+          value: "5",
+          variant: "coin",
+        },
+      },
+
+      // ── M5 — Você tem 5 moedas, item custa 8 ──
+      {
+        type: "multiple_choice",
+        question:
+          "Agora você tem 5 moedas. Um jogo custa 8 moedas. Dá pra comprar?",
+        options: ["Sim!", "Não"],
+        correctIndex: 1,
+        explanation:
+          "Não dá! Você tem 5 mas precisa de 8. Faltam 3 moedas. Vai precisar guardar mais!",
+        highlight: {
+          label: "Suas moedas",
+          value: "5",
+          variant: "coin",
+        },
+      },
+
+      // ── M6 — Escolha com limite ──
+      {
+        type: "multiple_choice",
+        question:
+          "Você tem 5 moedas. O doce custa 5 e a bola custa 5. Dá pra comprar os dois?",
+        options: [
+          "Sim, os dois!",
+          "Não, só dá pra escolher um",
+        ],
+        correctIndex: 1,
+        explanation:
+          "Só dá pra escolher um! Você tem 5 moedas e cada um custa 5. Escolher faz parte!",
+      },
+
+      // ── M7 — Comprou → acontece o quê? ──
+      {
+        type: "multiple_choice",
+        question:
+          "Você tinha 5 moedas e comprou algo que custou 5. Sobrou dinheiro?",
+        options: ["Sim, sobrou", "Não, gastou tudo"],
+        correctIndex: 1,
+        explanation:
+          "Gastou tudo! 5 - 5 = 0 moedas. Quando gasta tudo, não sobra nada.",
+      },
+
+      // ── M8 — Troca antiga ──
+      {
+        type: "multiple_choice",
+        question:
+          "Antigamente, as pessoas trocavam coisas: 🥚 ovos por 🍞 pão. Isso é dinheiro?",
+        options: ["Sim, é dinheiro", "Não, é troca"],
+        correctIndex: 1,
+        explanation:
+          "Isso era troca! Dinheiro foi inventado depois para facilitar. Com ele, não precisa encontrar alguém que queira exatamente o que você tem.",
+      },
+
+      // ── M9 — Com dinheiro é mais fácil? ──
+      {
+        type: "multiple_choice",
+        question: "O que é mais fácil: trocar coisas ou pagar com dinheiro?",
+        options: ["Trocar coisas", "Pagar com dinheiro"],
+        correctIndex: 1,
+        explanation:
+          "Com dinheiro é muito mais fácil! Você pode comprar qualquer coisa, de qualquer pessoa.",
+      },
+
+      // ── M10 — Missão real ──
+      {
+        type: "tutorial",
+        title: "🎯 Missão na vida real!",
+        description:
+          "Pergunte a um adulto: \"O que você compra com dinheiro?\". Ouve a resposta e depois aperte Continuar. Missão cumprida!",
+      },
+
       { type: "celebration" },
     ],
   },

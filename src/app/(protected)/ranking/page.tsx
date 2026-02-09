@@ -22,17 +22,33 @@ export default async function RankingPage() {
   // Fetch current user's child
   const { data: child } = await supabase
     .from("children")
-    .select("id")
+    .select("id, age_group")
     .eq("parent_id", user.id)
     .limit(1)
     .single();
 
-  // Fetch all children sorted by points (top performers)
-  const { data: ranking } = await supabase
-    .from("children")
-    .select("id, name, age_group, total_points")
-    .order("total_points", { ascending: false })
-    .limit(50);
+  // Fetch all children sorted by points, grouped by age
+  const [{ data: ranking79 }, { data: ranking1012 }, { data: ranking1315 }] =
+    await Promise.all([
+      supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .eq("age_group", "7-9")
+        .order("total_points", { ascending: false })
+        .limit(50),
+      supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .eq("age_group", "10-12")
+        .order("total_points", { ascending: false })
+        .limit(50),
+      supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .eq("age_group", "13-15")
+        .order("total_points", { ascending: false })
+        .limit(50),
+    ]);
 
   return (
     <div className="space-y-6">
@@ -59,8 +75,13 @@ export default async function RankingPage() {
       </div>
 
       <Leaderboard
-        initialRanking={ranking ?? []}
+        rankingByAge={{
+          "7-9": ranking79 ?? [],
+          "10-12": ranking1012 ?? [],
+          "13-15": ranking1315 ?? [],
+        }}
         currentChildId={child?.id ?? null}
+        currentAgeGroup={child?.age_group ?? "7-9"}
       />
     </div>
   );

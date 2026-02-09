@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
@@ -66,7 +67,8 @@ function getPasswordStrength(password: string): { label: string; color: string; 
   return { label: "Excelente", color: "bg-emerald-500", width: "100%" };
 }
 
-export function SignupForm() {
+export function SignupForm({ referralCode }: { referralCode?: string }) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -147,12 +149,15 @@ export function SignupForm() {
     const supabase = createClient();
 
     try {
-      const { error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          data: { display_name: name.trim(), onboarding_completed: false },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          data: {
+            display_name: name.trim(),
+            onboarding_completed: false,
+            ...(referralCode ? { referral_code: referralCode } : {}),
+          },
         },
       });
 
@@ -161,6 +166,60 @@ export function SignupForm() {
         return;
       }
 
+      // If we got a session (email confirmation disabled), redirect to onboarding
+      if (data.session) {
+        // Ensure public.users row exists
+        await supabase.from("users").upsert(
+          {
+            id: data.user!.id,
+            email: data.user!.email!,
+            display_name: name.trim(),
+          },
+          { onConflict: "id" }
+        );
+
+        // Process referral if present
+        if (referralCode) {
+          const { data: referrer } = await supabase
+            .from("users")
+            .select("id")
+            .eq("referral_code", referralCode)
+            .single();
+
+          if (referrer) {
+            await supabase.from("referrals").insert({
+              referrer_id: referrer.id,
+              referred_id: data.user!.id,
+            });
+
+            // Award points to referrer's child
+            const { data: referrerChild } = await supabase
+              .from("children")
+              .select("id, total_points")
+              .eq("parent_id", referrer.id)
+              .limit(1)
+              .single();
+
+            if (referrerChild) {
+              await supabase
+                .from("children")
+                .update({ total_points: (referrerChild.total_points ?? 0) + 50 })
+                .eq("id", referrerChild.id);
+
+              await supabase
+                .from("referrals")
+                .update({ points_awarded: true })
+                .eq("referred_id", data.user!.id);
+            }
+          }
+        }
+
+        router.push("/onboarding");
+        router.refresh();
+        return;
+      }
+
+      // Fallback: if email confirmation is still required
       setSuccess(true);
     } finally {
       setIsLoading(false);

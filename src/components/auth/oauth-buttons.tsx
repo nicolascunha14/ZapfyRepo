@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
 
-export function OAuthButtons() {
+export function OAuthButtons({ referralCode }: { referralCode?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,7 @@ export function OAuthButtons() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback${referralCode ? `?ref=${referralCode}` : ""}`,
         },
       });
 

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Puzzle, Heart } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import {
   ScrollAnimation,
-  StaggerContainer,
-  StaggerItem,
 } from "@/components/ui/scroll-animation";
 import {
   AlertDialog,
@@ -17,77 +15,33 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const features = [
-  {
-    icon: <Puzzle className="w-8 h-8 text-white" />,
-    title: "Plug & Play para Professores",
-    description:
-      "Plataforma pronta para usar com gerenciamento de turmas, relatórios por aluno e conteúdo didático completo.",
-  },
-  {
-    icon: <GraduationCap className="w-8 h-8 text-white" />,
-    title: "Alinhado à BNCC",
-    description:
-      "Conteúdo desenvolvido seguindo as diretrizes da Base Nacional Comum Curricular para educação financeira.",
-  },
-  {
-    icon: <Heart className="w-8 h-8 text-white" />,
-    title: "Gratuito para Escolas Públicas",
-    description:
-      "Acreditamos que educação financeira é um direito. Por isso, escolas públicas têm acesso gratuito à Zapfy.",
-  },
-];
-
 export function Schools() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <section className="section-padding bg-muted/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-zapfy-mint/5 blur-3xl" />
-
+    <section className="py-12 bg-muted/20 relative">
       <div className="container-zapfy relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-12">
-          <StaggerContainer className="space-y-6">
-            <StaggerItem>
-              <h2 className="text-3xl md:text-4xl font-display font-bold">
-                Zapfy nas{" "}
-                <span className="bg-gradient-to-r from-primary-500 to-zapfy-mint bg-clip-text text-transparent">
-                  Escolas
-                </span>
-              </h2>
-            </StaggerItem>
-            <StaggerItem>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Leve educação financeira para sua escola. Plataforma completa
-                para professores, alunos e coordenadores.
-              </p>
-            </StaggerItem>
-          </StaggerContainer>
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h3 className="text-xl md:text-2xl font-display font-semibold text-muted-foreground">
+            Sua Escola Também Pode Ter{" "}
+            <span className="text-primary-500">Zapfy</span>
+          </h3>
 
-          <ScrollAnimation animation="scale" delay={0.2}>
-            <div className="grid md:grid-cols-3 gap-6">
-              {features.map((feature) => (
-                <div key={feature.title} className="card-zapfy text-center space-y-4">
-                  <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-zapfy-mint flex items-center justify-center">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-display font-bold">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </ScrollAnimation>
+          <p className="text-muted-foreground">
+            Professores e coordenadores: a Zapfy está disponível{" "}
+            <strong>GRATUITAMENTE</strong> para escolas públicas. Alinhada à
+            BNCC, pronta para usar.
+          </p>
 
-          <ScrollAnimation animation="fadeUp" delay={0.3}>
+          <ScrollAnimation animation="fadeUp" delay={0.2}>
             <button
               onClick={() => setDialogOpen(true)}
-              className="btn-outline-zapfy"
+              className="text-primary-500 hover:text-primary-500/80 font-medium inline-flex items-center gap-1 transition-colors group"
             >
               Quero Zapfy na Minha Escola
+              <span className="group-hover:translate-x-1 transition-transform">
+                →
+              </span>
             </button>
           </ScrollAnimation>
         </div>
@@ -96,18 +50,35 @@ export function Schools() {
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-display">
-              Zapfy para Escolas
+            <AlertDialogTitle className="flex items-center gap-2 font-display">
+              <GraduationCap className="w-6 h-6 text-primary-500" />
+              Zapfy para Escolas - Em Breve
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              A versão para escolas está chegando em breve! Enquanto isso, entre
-              em contato pelo e-mail{" "}
-              <strong>escolas@zapfy.com.br</strong> para saber mais sobre como
-              levar educação financeira para sua instituição.
+            <AlertDialogDescription className="text-base space-y-3 pt-2">
+              <p>Obrigado pelo seu interesse!</p>
+              <p>
+                Atualmente, a{" "}
+                <strong>
+                  Zapfy está disponível exclusivamente para famílias
+                </strong>
+                . Estamos desenvolvendo uma versão completa para escolas com
+                gestão de turmas, relatórios pedagógicos e alinhamento total com
+                a BNCC.
+              </p>
+              <p>
+                <strong>Quer ser avisado quando lançarmos?</strong>
+                <br />
+                Entre em contato conosco pelo email:{" "}
+                <span className="text-primary-500 font-semibold">
+                  escolas@zapfy.com.br
+                </span>
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction>Entendi</AlertDialogAction>
+            <AlertDialogAction className="bg-primary-500 hover:bg-primary-500/90">
+              Entendi
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

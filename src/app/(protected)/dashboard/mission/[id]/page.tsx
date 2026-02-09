@@ -55,6 +55,32 @@ export default async function MissionPage({
     redirect("/dashboard");
   }
 
+  // Check sequential order: ensure previous mission is completed
+  const { data: allMissions } = await supabase
+    .from("missions")
+    .select("id")
+    .eq("age_group", child.age_group)
+    .order("display_order", { ascending: true });
+
+  if (allMissions && allMissions.length > 1) {
+    const currentIndex = allMissions.findIndex((m) => m.id === id);
+
+    if (currentIndex > 0) {
+      const previousMissionId = allMissions[currentIndex - 1].id;
+      const { data: prevCompleted } = await supabase
+        .from("completed_missions")
+        .select("id")
+        .eq("child_id", child.id)
+        .eq("mission_id", previousMissionId)
+        .limit(1);
+
+      if (!prevCompleted || prevCompleted.length === 0) {
+        // Previous mission not completed — redirect back
+        redirect("/dashboard");
+      }
+    }
+  }
+
   // Get interactive content
   const content = getMissionContent(mission.content_key);
 

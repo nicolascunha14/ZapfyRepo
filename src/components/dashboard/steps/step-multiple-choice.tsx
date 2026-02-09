@@ -36,6 +36,29 @@ export function StepMultipleChoiceComponent({
 
   return (
     <div className="flex flex-col space-y-6 px-4">
+      {/* Highlight visual (coin or note) */}
+      {step.highlight && (
+        <motion.div
+          className="flex flex-col items-center gap-2"
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          {step.highlight.variant === "coin" ? (
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 border-3 border-amber-500 flex items-center justify-center shadow-lg ring-4 ring-amber-200/50">
+              <span className="text-2xl font-bold text-amber-800">?</span>
+            </div>
+          ) : (
+            <div className="w-36 h-20 rounded-xl bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center shadow-lg">
+              <span className="text-2xl font-bold text-emerald-700">?</span>
+            </div>
+          )}
+          <span className="text-xs font-medium text-muted-foreground">
+            {step.highlight.label}
+          </span>
+        </motion.div>
+      )}
+
       {/* Question */}
       <motion.h3
         className="text-xl md:text-2xl font-display font-bold text-foreground text-center"

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/ui/logo";
-import { LogOut, Trophy, User, Shield } from "lucide-react";
+import { LogOut, Trophy, User, Shield, BarChart3, Crown } from "lucide-react";
 import { PointsHeader } from "@/components/dashboard/points-header";
 
 export default async function ProtectedLayout({
@@ -54,11 +54,25 @@ export default async function ProtectedLayout({
               />
             )}
             <Link
+              href="/parent"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary-500 transition-colors"
+            >
+              <BarChart3 size={16} />
+              <span className="hidden sm:inline">Painel</span>
+            </Link>
+            <Link
               href="/ranking"
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-amber-500 transition-colors"
             >
               <Trophy size={16} />
               <span className="hidden sm:inline">Ranking</span>
+            </Link>
+            <Link
+              href="/premium"
+              className="flex items-center gap-1.5 text-sm text-amber-500 hover:text-amber-600 transition-colors"
+            >
+              <Crown size={16} />
+              <span className="hidden sm:inline">Premium</span>
             </Link>
             <Link
               href="/profile"
