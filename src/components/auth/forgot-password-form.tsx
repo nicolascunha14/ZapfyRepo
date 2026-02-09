@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { getAuthErrorMessage } from "@/lib/auth-errors";
 import { useRateLimit } from "@/hooks/use-rate-limit";
 import Link from "next/link";
 
@@ -23,16 +21,20 @@ export function ForgotPasswordForm() {
     const email = formData.get("email") as string;
 
     recordAttempt();
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo: `${window.location.origin}/auth/confirm?next=/update-password`,
-      }
-    );
 
-    if (authError) {
-      setError(getAuthErrorMessage(authError));
+    try {
+      const res = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        setError("Erro ao enviar o link. Tente novamente.");
+        return;
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
       return;
     }
 

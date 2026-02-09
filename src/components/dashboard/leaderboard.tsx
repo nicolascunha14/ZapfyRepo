@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Medal, Crown } from "lucide-react";
+import { Trophy, Medal, Crown, Users, Globe } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { getLevel } from "@/lib/types";
@@ -90,7 +90,7 @@ function RankRow({
               {child.name}
               {isCurrentUser && (
                 <span className="text-xs font-medium text-primary-500 ml-1.5">
-                  (Você)
+                  (Voce)
                 </span>
               )}
             </p>
@@ -111,25 +111,109 @@ function RankRow({
   );
 }
 
+function Podium({
+  top3,
+  currentChildId,
+}: {
+  top3: RankedChild[];
+  currentChildId: string | null;
+}) {
+  if (top3.length < 3) return null;
+
+  return (
+    <div className="grid grid-cols-3 gap-2 mb-2">
+      {[1, 0, 2].map((podiumIndex) => {
+        const child = top3[podiumIndex];
+        if (!child) return null;
+        const position = podiumIndex + 1;
+        const isMe = child.id === currentChildId;
+        const isFirst = position === 1;
+
+        return (
+          <motion.div
+            key={child.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: podiumIndex * 0.15 }}
+            className={`flex flex-col items-center ${
+              isFirst ? "order-2 -mt-2" : position === 2 ? "order-1 mt-4" : "order-3 mt-4"
+            }`}
+          >
+            <Card
+              className={`w-full p-3 text-center ${
+                isMe
+                  ? "bg-primary-500/10 border-primary-500/30"
+                  : "bg-white"
+              }`}
+            >
+              <div className="flex justify-center mb-2">
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    isFirst
+                      ? "bg-amber-100"
+                      : position === 2
+                      ? "bg-gray-100"
+                      : "bg-orange-100"
+                  }`}
+                >
+                  {isFirst ? (
+                    <Crown size={24} className="text-amber-500" />
+                  ) : (
+                    <Medal
+                      size={22}
+                      className={
+                        position === 2
+                          ? "text-gray-400"
+                          : "text-orange-400"
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+              <p className="font-display font-bold text-xs truncate">
+                {child.name}
+              </p>
+              <p className="font-display font-bold text-sm text-primary-600 tabular-nums mt-0.5">
+                {child.total_points} pts
+              </p>
+            </Card>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Leaderboard({
   rankingByAge,
+  friendsRanking,
   currentChildId,
   currentAgeGroup,
 }: {
   rankingByAge: Record<string, RankedChild[]>;
+  friendsRanking: RankedChild[];
   currentChildId: string | null;
   currentAgeGroup: string;
 }) {
+  const [mode, setMode] = useState<"global" | "friends">("global");
   const [activeTab, setActiveTab] = useState(currentAgeGroup);
   const [rankings, setRankings] = useState(rankingByAge);
+  const [friends, setFriends] = useState(friendsRanking);
 
-  const ranking = rankings[activeTab] ?? [];
-  const top10 = ranking.slice(0, 10);
+  // Global mode data
+  const globalRanking = rankings[activeTab] ?? [];
+  const globalTop10 = globalRanking.slice(0, 10);
+  const globalUserIndex = globalRanking.findIndex((c) => c.id === currentChildId);
+  const globalUserPosition = globalUserIndex >= 0 ? globalUserIndex + 1 : null;
+  const globalCurrentUser = globalUserIndex >= 0 ? globalRanking[globalUserIndex] : null;
+  const globalIsInTop10 = globalUserPosition !== null && globalUserPosition <= 10;
 
-  const currentUserIndex = ranking.findIndex((c) => c.id === currentChildId);
-  const currentUserPosition = currentUserIndex >= 0 ? currentUserIndex + 1 : null;
-  const currentUser = currentUserIndex >= 0 ? ranking[currentUserIndex] : null;
-  const isInTop10 = currentUserPosition !== null && currentUserPosition <= 10;
+  // Friends mode data
+  const friendsTop10 = friends.slice(0, 10);
+  const friendsUserIndex = friends.findIndex((c) => c.id === currentChildId);
+  const friendsUserPosition = friendsUserIndex >= 0 ? friendsUserIndex + 1 : null;
+  const friendsCurrentUser = friendsUserIndex >= 0 ? friends[friendsUserIndex] : null;
+  const friendsIsInTop10 = friendsUserPosition !== null && friendsUserPosition <= 10;
 
   // Real-time updates
   useEffect(() => {
@@ -159,6 +243,14 @@ export function Leaderboard({
               [ageGroup]: next.sort((a, b) => b.total_points - a.total_points),
             };
           });
+          // Also update friends ranking
+          setFriends((prev) => {
+            const idx = prev.findIndex((c) => c.id === updated.id);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            next[idx] = { ...next[idx], total_points: updated.total_points ?? next[idx].total_points };
+            return next.sort((a, b) => b.total_points - a.total_points);
+          });
         }
       )
       .subscribe();
@@ -170,150 +262,191 @@ export function Leaderboard({
 
   return (
     <div className="space-y-4">
-      {/* Age group tabs */}
-      <div className="flex gap-2">
-        {AGE_TABS.map((tab) => {
-          const isActive = activeTab === tab.key;
-          const count = (rankings[tab.key] ?? []).length;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-bold transition-all cursor-pointer ${
-                isActive
-                  ? `${tab.color} text-white shadow-md ring-2 ${tab.ring}`
-                  : "bg-white border border-border/50 text-muted-foreground hover:bg-muted/50"
-              }`}
-            >
-              {tab.label}
-              <span
-                className={`ml-1.5 text-[10px] font-medium ${
-                  isActive ? "text-white/70" : "text-muted-foreground/60"
-                }`}
-              >
-                ({count})
-              </span>
-            </button>
-          );
-        })}
+      {/* Global / Friends toggle */}
+      <div className="flex gap-2 p-1 bg-muted/50 rounded-xl">
+        <button
+          type="button"
+          onClick={() => setMode("global")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-display font-bold transition-all cursor-pointer ${
+            mode === "global"
+              ? "bg-white text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Globe size={16} />
+          Geral
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("friends")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-display font-bold transition-all cursor-pointer ${
+            mode === "friends"
+              ? "bg-white text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Users size={16} />
+          Amigos
+          {friends.length > 0 && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              mode === "friends" ? "bg-primary-100 text-primary-600" : "bg-muted text-muted-foreground"
+            }`}>
+              {friends.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Top 3 podium */}
-      {top10.length >= 3 && (
-        <div className="grid grid-cols-3 gap-2 mb-2">
-          {[1, 0, 2].map((podiumIndex) => {
-            const child = top10[podiumIndex];
-            if (!child) return null;
-            const position = podiumIndex + 1;
-            const isMe = child.id === currentChildId;
-            const isFirst = position === 1;
-
-            return (
-              <motion.div
-                key={child.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: podiumIndex * 0.15 }}
-                className={`flex flex-col items-center ${
-                  isFirst ? "order-2 -mt-2" : position === 2 ? "order-1 mt-4" : "order-3 mt-4"
-                }`}
-              >
-                <Card
-                  className={`w-full p-3 text-center ${
-                    isMe
-                      ? "bg-primary-500/10 border-primary-500/30"
-                      : "bg-white"
+      {mode === "global" ? (
+        <>
+          {/* Age group tabs */}
+          <div className="flex gap-2">
+            {AGE_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              const count = (rankings[tab.key] ?? []).length;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? `${tab.color} text-white shadow-md ring-2 ${tab.ring}`
+                      : "bg-white border border-border/50 text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  <div className="flex justify-center mb-2">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        isFirst
-                          ? "bg-amber-100"
-                          : position === 2
-                          ? "bg-gray-100"
-                          : "bg-orange-100"
-                      }`}
-                    >
-                      {isFirst ? (
-                        <Crown size={24} className="text-amber-500" />
-                      ) : (
-                        <Medal
-                          size={22}
-                          className={
-                            position === 2
-                              ? "text-gray-400"
-                              : "text-orange-400"
-                          }
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <p className="font-display font-bold text-xs truncate">
-                    {child.name}
-                  </p>
-                  <p className="font-display font-bold text-sm text-primary-600 tabular-nums mt-0.5">
-                    {child.total_points} pts
-                  </p>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Full ranking list */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-2"
-        >
-          {top10.map((child, i) => (
-            <RankRow
-              key={child.id}
-              child={child}
-              position={i + 1}
-              isCurrentUser={child.id === currentChildId}
-              index={i}
-            />
-          ))}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Current user not in top 10 */}
-      {!isInTop10 && currentUser && currentUserPosition && activeTab === currentAgeGroup && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-4"
-        >
-          <div className="border-t border-dashed border-border pt-4">
-            <p className="text-xs text-muted-foreground text-center mb-2">
-              Sua posição no ranking
-            </p>
-            <RankRow
-              child={currentUser}
-              position={currentUserPosition}
-              isCurrentUser={true}
-              index={0}
-            />
+                  {tab.label}
+                  <span
+                    className={`ml-1.5 text-[10px] font-medium ${
+                      isActive ? "text-white/70" : "text-muted-foreground/60"
+                    }`}
+                  >
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
-      )}
 
-      {/* Empty state */}
-      {ranking.length === 0 && (
-        <div className="text-center py-12">
-          <Trophy size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">
-            Nenhum jogador nesta faixa etária ainda. Complete missões para aparecer aqui!
-          </p>
-        </div>
+          {/* Top 3 podium */}
+          <Podium top3={globalTop10} currentChildId={currentChildId} />
+
+          {/* Full ranking list */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2"
+            >
+              {globalTop10.map((child, i) => (
+                <RankRow
+                  key={child.id}
+                  child={child}
+                  position={i + 1}
+                  isCurrentUser={child.id === currentChildId}
+                  index={i}
+                />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Current user not in top 10 */}
+          {!globalIsInTop10 && globalCurrentUser && globalUserPosition && activeTab === currentAgeGroup && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4"
+            >
+              <div className="border-t border-dashed border-border pt-4">
+                <p className="text-xs text-muted-foreground text-center mb-2">
+                  Sua posicao no ranking
+                </p>
+                <RankRow
+                  child={globalCurrentUser}
+                  position={globalUserPosition}
+                  isCurrentUser={true}
+                  index={0}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Empty state */}
+          {globalRanking.length === 0 && (
+            <div className="text-center py-12">
+              <Trophy size={48} className="mx-auto text-muted-foreground/30 mb-4" />
+              <p className="text-muted-foreground">
+                Nenhum jogador nesta faixa etaria ainda. Complete missoes para aparecer aqui!
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Friends ranking */}
+          {friends.length === 0 ? (
+            <div className="text-center py-12">
+              <Users size={48} className="mx-auto text-muted-foreground/30 mb-4" />
+              <p className="text-muted-foreground mb-2">
+                Voce ainda nao tem amigos adicionados.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Adicione amigos no seu perfil para ver o ranking entre amigos!
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Top 3 podium */}
+              <Podium top3={friendsTop10} currentChildId={currentChildId} />
+
+              {/* Full friends ranking list */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key="friends"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-2"
+                >
+                  {friendsTop10.map((child, i) => (
+                    <RankRow
+                      key={child.id}
+                      child={child}
+                      position={i + 1}
+                      isCurrentUser={child.id === currentChildId}
+                      index={i}
+                    />
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Current user not in top 10 friends */}
+              {!friendsIsInTop10 && friendsCurrentUser && friendsUserPosition && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4"
+                >
+                  <div className="border-t border-dashed border-border pt-4">
+                    <p className="text-xs text-muted-foreground text-center mb-2">
+                      Sua posicao entre amigos
+                    </p>
+                    <RankRow
+                      child={friendsCurrentUser}
+                      position={friendsUserPosition}
+                      isCurrentUser={true}
+                      index={0}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

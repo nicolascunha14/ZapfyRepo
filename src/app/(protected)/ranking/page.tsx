@@ -50,6 +50,47 @@ export default async function RankingPage() {
         .limit(50),
     ]);
 
+  // Fetch friends ranking
+  let friendsRanking: { id: string; name: string; age_group: string; total_points: number }[] = [];
+
+  if (child) {
+    // Get accepted friendships (both directions)
+    const { data: friendships } = await supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${child.id},addressee_id.eq.${child.id}`);
+
+    if (friendships && friendships.length > 0) {
+      // Collect friend IDs
+      const friendIds = friendships.map((f) =>
+        f.requester_id === child.id ? f.addressee_id : f.requester_id
+      );
+
+      // Include current child + all friends
+      const allIds = [child.id, ...friendIds];
+
+      const { data: friendsData } = await supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .in("id", allIds)
+        .order("total_points", { ascending: false });
+
+      friendsRanking = friendsData ?? [];
+    } else {
+      // No friends, just show current child
+      const { data: selfData } = await supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .eq("id", child.id)
+        .single();
+
+      if (selfData) {
+        friendsRanking = [selfData];
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -80,6 +121,7 @@ export default async function RankingPage() {
           "10-12": ranking1012 ?? [],
           "13-15": ranking1315 ?? [],
         }}
+        friendsRanking={friendsRanking}
         currentChildId={child?.id ?? null}
         currentAgeGroup={child?.age_group ?? "7-9"}
       />

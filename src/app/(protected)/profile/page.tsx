@@ -52,6 +52,50 @@ export default async function ProfilePage() {
     .limit(1)
     .single();
 
+  // Fetch friendships
+  const { data: acceptedFriendships } = await supabase
+    .from("friendships")
+    .select("requester_id, addressee_id")
+    .eq("status", "accepted")
+    .or(`requester_id.eq.${child.id},addressee_id.eq.${child.id}`);
+
+  const friendIds = (acceptedFriendships ?? []).map((f) =>
+    f.requester_id === child.id ? f.addressee_id : f.requester_id
+  );
+
+  let friends: { id: string; name: string; age_group: string; total_points: number }[] = [];
+  if (friendIds.length > 0) {
+    const { data: friendsData } = await supabase
+      .from("children")
+      .select("id, name, age_group, total_points")
+      .in("id", friendIds)
+      .order("total_points", { ascending: false });
+    friends = friendsData ?? [];
+  }
+
+  // Fetch pending friend requests (sent TO this child)
+  const { data: pendingRows } = await supabase
+    .from("friendships")
+    .select("id, requester_id")
+    .eq("addressee_id", child.id)
+    .eq("status", "pending");
+
+  let pendingRequests: { id: string; requester: { id: string; name: string; age_group: string; total_points: number } }[] = [];
+  if (pendingRows && pendingRows.length > 0) {
+    const requesterIds = pendingRows.map((r) => r.requester_id);
+    const { data: requesters } = await supabase
+      .from("children")
+      .select("id, name, age_group, total_points")
+      .in("id", requesterIds);
+
+    if (requesters) {
+      pendingRequests = pendingRows.map((row) => ({
+        id: row.id,
+        requester: requesters.find((r) => r.id === row.requester_id)!,
+      })).filter((r) => r.requester);
+    }
+  }
+
   // Count total missions for this age group
   const { count: totalMissions } = await supabase
     .from("missions")
@@ -99,6 +143,8 @@ export default async function ProfilePage() {
         referralCode={userData?.referral_code ?? ""}
         referralCount={referralCount ?? 0}
         currentStreak={latestLogin?.streak_count ?? 0}
+        friends={friends}
+        pendingRequests={pendingRequests}
       />
     </div>
   );

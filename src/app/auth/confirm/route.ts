@@ -6,11 +6,32 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
+  const code = searchParams.get("code");
+  const next = searchParams.get("next");
 
-  console.log("[auth/confirm] START", { token_hash: token_hash ? "present" : "missing", type });
+  console.log("[auth/confirm] START", {
+    token_hash: token_hash ? "present" : "missing",
+    code: code ? "present" : "missing",
+    type,
+    next,
+  });
 
+  const supabase = await createClient();
+
+  // PKCE flow: Supabase redirects with a `code` parameter
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    console.log("[auth/confirm] PKCE exchangeCode result:", { error: error?.message ?? "success" });
+
+    if (!error) {
+      const redirect = next || "/dashboard";
+      console.log("[auth/confirm] PKCE success → redirecting to:", redirect);
+      return NextResponse.redirect(new URL(redirect, request.url));
+    }
+  }
+
+  // Legacy flow: token_hash + type
   if (token_hash && type) {
-    const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
 
     console.log("[auth/confirm] verifyOtp result:", { error: error?.message ?? "success" });
@@ -53,7 +74,6 @@ export async function GET(request: NextRequest) {
       }
 
       // ALL non-recovery confirmations go to /onboarding
-      // The onboarding layout will auto-redirect to dashboard if child exists
       console.log("[auth/confirm] Redirecting to /onboarding");
       return NextResponse.redirect(new URL("/onboarding", request.url));
     }

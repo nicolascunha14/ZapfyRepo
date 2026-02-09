@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getLevel } from "@/lib/types";
 import { computeBadges, BADGES } from "@/lib/badges";
 import { Lock, Award } from "lucide-react";
+import { FriendsManager } from "@/components/dashboard/friends-manager";
 
 type CompletedMissionWithDetails = {
   id: string;
@@ -67,6 +68,8 @@ export function ProfileView({
   referralCode,
   referralCount,
   currentStreak,
+  friends,
+  pendingRequests,
 }: {
   childId: string;
   initialName: string;
@@ -77,6 +80,8 @@ export function ProfileView({
   referralCode: string;
   referralCount: number;
   currentStreak: number;
+  friends: { id: string; name: string; age_group: string; total_points: number }[];
+  pendingRequests: { id: string; requester: { id: string; name: string; age_group: string; total_points: number } }[];
 }) {
   const [name, setName] = useState(initialName);
   const [editingName, setEditingName] = useState(false);
@@ -416,6 +421,23 @@ export function ProfileView({
           </Card>
         </motion.div>
       )}
+
+      {/* Friends manager */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card>
+          <CardContent className="pt-6">
+            <FriendsManager
+              childId={childId}
+              initialFriends={friends}
+              initialPendingRequests={pendingRequests}
+            />
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Mission history */}
       <motion.div

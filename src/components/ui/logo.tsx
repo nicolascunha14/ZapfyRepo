@@ -1,12 +1,12 @@
-import { Zap } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 type LogoSize = "sm" | "md" | "lg";
 
-const sizes: Record<LogoSize, { icon: number; text: string; ring: string }> = {
-  sm: { icon: 18, text: "text-xl", ring: "p-1.5" },
-  md: { icon: 22, text: "text-2xl", ring: "p-2" },
-  lg: { icon: 28, text: "text-3xl", ring: "p-2.5" },
+const sizes: Record<LogoSize, { img: number; text: string }> = {
+  sm: { img: 40, text: "text-xl" },
+  md: { img: 48, text: "text-2xl" },
+  lg: { img: 64, text: "text-3xl" },
 };
 
 export function Logo({ size = "md" }: { size?: LogoSize }) {
@@ -14,11 +14,13 @@ export function Logo({ size = "md" }: { size?: LogoSize }) {
 
   return (
     <Link href="/" className="flex items-center gap-2">
-      <div
-        className={`bg-gradient-to-br from-primary-500 to-zapfy-mint rounded-xl ${s.ring} flex items-center justify-center`}
-      >
-        <Zap size={s.icon} className="text-white fill-white" />
-      </div>
+      <Image
+        src="/zapfy-logo.png"
+        alt="Zapfy"
+        width={s.img}
+        height={s.img}
+        className="shrink-0"
+      />
       <span className={`font-display font-bold bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent ${s.text}`}>
         Zapfy
       </span>
