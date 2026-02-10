@@ -44,7 +44,7 @@ export default async function ProtectedLayout({
     <div className="min-h-screen bg-muted/30">
       <Sidebar isAdmin={isAdmin} points={points} />
       <MobileHeader childId={childId} initialPoints={points} />
-      <main className="lg:ml-60 pb-20 lg:pb-0 px-4 py-6 max-w-5xl">
+      <main className="lg:ml-60 pb-20 lg:pb-0 px-4 py-6 lg:px-8">
         {children}
       </main>
       <BottomNav />
