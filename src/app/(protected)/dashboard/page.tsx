@@ -129,8 +129,8 @@ export default async function DashboardPage() {
 
           {/* Two-column layout: chapters (left) + info panel (right) */}
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left: chapters (main content) */}
-            <div className="flex-1 min-w-0 order-2 lg:order-1">
+            {/* Chapters - main content, shown FIRST on mobile */}
+            <div className="flex-1 min-w-0">
               {chapters.length > 0 && (
                 <ChapterList
                   chapters={chapters}
@@ -139,8 +139,8 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* Right info panel - sticky on desktop */}
-            <div className="lg:w-72 lg:shrink-0 space-y-4 lg:sticky lg:top-6 lg:self-start order-1 lg:order-2">
+            {/* Right info panel - sticky on desktop, below chapters on mobile */}
+            <div className="lg:w-72 lg:shrink-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
               {/* Greeting */}
               <div>
                 <h1 className="text-xl font-display font-bold text-foreground">
