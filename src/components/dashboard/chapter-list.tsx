@@ -97,20 +97,20 @@ function ChapterCard({
   if (isLocked) {
     return (
       <motion.div
-        className="relative rounded-2xl bg-gray-100 p-4 lg:p-5 opacity-50"
+        className="relative rounded-2xl bg-gray-100 p-5 lg:p-6 opacity-50"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 0.5, y: 0 }}
         transition={{ delay: index * 0.04 }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gray-200 flex items-center justify-center">
-            <Lock size={22} className="text-gray-400" />
+          <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-xl bg-gray-200 flex items-center justify-center">
+            <Lock size={24} className="text-gray-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-display font-bold text-sm lg:text-base text-gray-400 truncate">
+            <p className="font-display font-bold text-sm lg:text-lg text-gray-400 truncate">
               {chapter.title}
             </p>
-            <p className="text-xs text-gray-300 truncate mt-0.5">
+            <p className="text-xs lg:text-sm text-gray-300 truncate mt-0.5">
               {chapter.description}
             </p>
           </div>
@@ -127,17 +127,17 @@ function ChapterCard({
     >
       <Link
         href={`/dashboard/chapter/${chapter.id}`}
-        className={`relative block rounded-2xl bg-gradient-to-r ${color.bg} p-4 lg:p-5 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all overflow-hidden`}
+        className={`relative block rounded-2xl bg-gradient-to-r ${color.bg} p-5 lg:p-6 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all overflow-hidden`}
       >
         {/* Decorative circles */}
-        <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10" />
-        <div className="absolute -right-2 -bottom-6 w-16 h-16 rounded-full bg-white/10" />
+        <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+        <div className="absolute -right-3 -bottom-8 w-20 h-20 rounded-full bg-white/10" />
 
-        <div className="relative flex items-center gap-3">
+        <div className="relative flex items-center gap-4">
           {/* Icon */}
-          <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-white/20 flex items-center justify-center text-2xl lg:text-3xl shrink-0">
+          <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-xl bg-white/20 flex items-center justify-center text-2xl lg:text-3xl shrink-0">
             {isCompleted ? (
-              <CheckCircle2 size={28} className="text-white" />
+              <CheckCircle2 size={30} className="text-white" />
             ) : (
               <span>{chapter.icon || "📖"}</span>
             )}
@@ -145,38 +145,38 @@ function ChapterCard({
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <p className="font-display font-bold text-white text-sm lg:text-base truncate">
+            <p className="font-display font-bold text-white text-sm lg:text-lg truncate">
               {chapter.title}
             </p>
-            <p className="text-xs text-white/70 truncate mt-0.5 hidden lg:block">
+            <p className="text-xs lg:text-sm text-white/70 truncate mt-0.5">
               {chapter.description}
             </p>
 
             {/* Progress bar */}
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className="flex-1 h-1.5 lg:h-2 bg-white/25 rounded-full overflow-hidden">
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex-1 h-2 bg-white/25 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-white rounded-full transition-all"
                   style={{ width: `${(progress / 10) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] lg:text-xs font-bold text-white/80 tabular-nums">
+              <span className="text-xs font-bold text-white/80 tabular-nums">
                 {progress}/10
               </span>
             </div>
 
             {/* Status badge */}
-            <div className="mt-1.5">
+            <div className="mt-2">
               {isCompleted ? (
-                <span className="text-[10px] lg:text-xs font-bold text-white/90 bg-white/20 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-white/90 bg-white/20 px-2.5 py-1 rounded-full">
                   Completo
                 </span>
               ) : isNext ? (
-                <span className="text-[10px] lg:text-xs font-bold text-white bg-white/30 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-white bg-white/30 px-2.5 py-1 rounded-full">
                   Continuar
                 </span>
               ) : (
-                <span className="text-[10px] lg:text-xs font-bold text-white/70 bg-white/15 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-white/70 bg-white/15 px-2.5 py-1 rounded-full">
                   Ver
                 </span>
               )}
@@ -185,8 +185,8 @@ function ChapterCard({
 
           {/* Play button */}
           {!isCompleted && (
-            <div className="shrink-0 w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white/25 flex items-center justify-center">
-              <Play size={18} className="text-white ml-0.5" fill="white" />
+            <div className="shrink-0 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/25 flex items-center justify-center">
+              <Play size={20} className="text-white ml-0.5" fill="white" />
             </div>
           )}
         </div>

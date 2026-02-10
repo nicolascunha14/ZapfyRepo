@@ -130,7 +130,7 @@ export default async function DashboardPage() {
           {/* Two-column layout: chapters (left) + info panel (right) */}
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Chapters - main content, shown FIRST on mobile */}
-            <div className="flex-1 min-w-0 max-w-xl">
+            <div className="flex-1 min-w-0 max-w-2xl">
               {chapters.length > 0 && (
                 <ChapterList
                   chapters={chapters}
