@@ -127,10 +127,20 @@ export default async function DashboardPage() {
             initialStreak={currentStreak}
           />
 
-          {/* Two-column layout: sidebar info + chapters */}
+          {/* Two-column layout: chapters (left) + info panel (right) */}
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left info panel - sticky on desktop */}
-            <div className="lg:w-72 lg:shrink-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
+            {/* Left: chapters (main content) */}
+            <div className="flex-1 min-w-0 order-2 lg:order-1">
+              {chapters.length > 0 && (
+                <ChapterList
+                  chapters={chapters}
+                  childId={child.id}
+                />
+              )}
+            </div>
+
+            {/* Right info panel - sticky on desktop */}
+            <div className="lg:w-72 lg:shrink-0 space-y-4 lg:sticky lg:top-6 lg:self-start order-1 lg:order-2">
               {/* Greeting */}
               <div>
                 <h1 className="text-xl font-display font-bold text-foreground">
@@ -195,16 +205,6 @@ export default async function DashboardPage() {
                   </CardContent>
                 </Card>
               </Link>
-            </div>
-
-            {/* Right: chapters (main content) */}
-            <div className="flex-1 min-w-0">
-              {chapters.length > 0 && (
-                <ChapterList
-                  chapters={chapters}
-                  childId={child.id}
-                />
-              )}
             </div>
           </div>
         </>
