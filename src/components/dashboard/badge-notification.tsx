@@ -63,7 +63,7 @@ export function BadgeNotification({
       .channel(`badge-notif-missions-${childId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "completed_missions", filter: `child_id=eq.${childId}` },
+        { event: "INSERT", schema: "public", table: "mission_attempts", filter: `child_id=eq.${childId}` },
         () => {
           setCompleted((prev) => prev + 1);
         }
@@ -125,7 +125,7 @@ export function BadgeNotification({
     <AnimatePresence>
       {newBadge && (
         <motion.div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm"
+          className="fixed bottom-22 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm"
           initial={{ y: 100, opacity: 0, scale: 0.9 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 100, opacity: 0, scale: 0.9 }}
