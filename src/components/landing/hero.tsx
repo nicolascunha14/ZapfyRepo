@@ -75,7 +75,7 @@ export function Hero() {
               </div>
 
               <motion.div
-                className="flex flex-col sm:flex-row gap-4 justify-center"
+                className="flex justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
@@ -94,7 +94,7 @@ export function Hero() {
               </motion.div>
 
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground"
+                className="hidden sm:flex flex-row items-center justify-center gap-6 text-sm text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.6 }}
@@ -111,7 +111,7 @@ export function Hero() {
               </motion.div>
 
               <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-sm text-muted-foreground mt-6"
+                className="hidden sm:flex flex-row items-center justify-center gap-8 text-sm text-muted-foreground mt-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.1, duration: 0.8 }}
