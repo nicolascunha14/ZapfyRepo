@@ -1,14 +1,51 @@
 "use client";
 
-import { ArrowRight, Sparkles } from "lucide-react";
-import { useRef } from "react";
+import { ArrowRight, Sparkles, Play } from "lucide-react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { ParticlesBackground } from "@/components/ui/particles-background";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [guestLoading, setGuestLoading] = useState(false);
+
+  async function handleTryFree() {
+    setGuestLoading(true);
+    try {
+      const supabase = createClient();
+
+      // 1. Sign in anonymously on the client (sets auth cookies)
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) {
+        console.error("[guest] signInAnonymously error:", error.message);
+        alert("Erro: " + error.message);
+        setGuestLoading(false);
+        return;
+      }
+      if (!data.user) {
+        setGuestLoading(false);
+        return;
+      }
+
+      // 2. Mark onboarding as completed for guest
+      await supabase.auth.updateUser({
+        data: { onboarding_completed: true, is_guest: true },
+      });
+
+      // 3. Go to age selection screen
+      router.push("/guest-setup");
+    } catch (err) {
+      console.error("[guest] unexpected error:", err);
+      router.push("/signup");
+    } finally {
+      setGuestLoading(false);
+    }
+  }
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -75,7 +112,7 @@ export function Hero() {
               </div>
 
               <motion.div
-                className="flex justify-center"
+                className="flex flex-col items-center gap-3"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
@@ -91,6 +128,15 @@ export function Hero() {
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </motion.button>
                 </Link>
+                <motion.button
+                  onClick={handleTryFree}
+                  disabled={guestLoading}
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Play className="w-4 h-4" />
+                  {guestLoading ? "Preparando..." : "Experimentar sem conta"}
+                </motion.button>
               </motion.div>
 
               <motion.div

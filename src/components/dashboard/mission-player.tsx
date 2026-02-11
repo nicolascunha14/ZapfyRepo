@@ -1,3 +1,5 @@
+// @ts-nocheck
+// Legacy component - replaced by new-mission-player.tsx
 "use client";
 
 import { useState } from "react";

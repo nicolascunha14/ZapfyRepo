@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
-import { MissionManager } from "@/components/admin/mission-manager";
 import type { Mission } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -24,17 +23,17 @@ export default async function AdminPage() {
     .from("children")
     .select("id, parent_id, name, age_group, total_points");
 
-  // Fetch all completed missions counts per child
+  // Fetch all completed mission attempts per child
   const { data: completions } = await supabase
-    .from("completed_missions")
-    .select("child_id, id");
+    .from("mission_attempts")
+    .select("child_id, id")
+    .eq("is_correct", true);
 
-  // Fetch all missions
+  // Fetch all missions (new chapter-based system)
   const { data: missions } = await supabase
     .from("missions")
-    .select("*")
-    .order("age_group")
-    .order("display_order", { ascending: true });
+    .select("*, chapters(age_group, title)")
+    .order("order_position", { ascending: true });
 
   // Build user rows
   const childByParent = new Map(
@@ -121,7 +120,12 @@ export default async function AdminPage() {
       />
 
       <div className="border-t border-border pt-6">
-        <MissionManager initialMissions={(missions as Mission[]) ?? []} />
+        <h2 className="font-display font-bold text-lg mb-2">
+          Missões ({missions?.length ?? 0})
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          O gerenciamento de missões agora usa o sistema de capítulos. Use o SQL Editor do Supabase para gerenciar.
+        </p>
       </div>
     </div>
   );

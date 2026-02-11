@@ -119,7 +119,7 @@ export function ParentDashboard({
         {
           event: "INSERT",
           schema: "public",
-          table: "completed_missions",
+          table: "mission_attempts",
           filter: `child_id=eq.${childId}`,
         },
         async (payload) => {

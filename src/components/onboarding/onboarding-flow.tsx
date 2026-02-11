@@ -227,21 +227,8 @@ export function OnboardingFlow() {
         return;
       }
 
-      // Fetch the first mission for the child's age group to redirect to it
-      const { data: firstMission } = await supabase
-        .from("missions")
-        .select("id")
-        .eq("age_group", ageGroup)
-        .order("display_order", { ascending: true })
-        .limit(1)
-        .single();
-
-      if (firstMission) {
-        router.push(`/dashboard/mission/${firstMission.id}`);
-      } else {
-        // Fallback to dashboard if no missions found
-        router.push("/dashboard");
-      }
+      // Redirect to dashboard after onboarding
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       const message =

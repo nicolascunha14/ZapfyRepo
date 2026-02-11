@@ -16,7 +16,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import type { Mission } from "@/lib/types";
+// Legacy Mission type for old admin interface
+type LegacyMission = {
+  id: string;
+  title: string;
+  description: string;
+  tips: string;
+  age_group: string;
+  theme: string;
+  points_reward: number;
+  display_order: number;
+  content_key: string;
+};
+
+type Mission = LegacyMission;
 
 type MissionForm = {
   title: string;

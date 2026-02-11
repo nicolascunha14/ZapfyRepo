@@ -1,3 +1,5 @@
+// @ts-nocheck
+// Legacy component - no longer used by the new chapter-based system
 "use client";
 
 import { useState } from "react";

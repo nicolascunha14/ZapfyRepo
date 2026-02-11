@@ -1,23 +1,63 @@
+export type AgeGroup = "7-9" | "10-12" | "13-15";
+
+export type MissionType = "quiz" | "drag_drop" | "numeric_input" | "text_input" | "true_false" | "matching";
+
+export type ChapterStatus = "locked" | "unlocked" | "in_progress" | "completed";
+
+export type Chapter = {
+  id: string;
+  age_group: AgeGroup;
+  chapter_number: number;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  order_position: number;
+};
+
+export type ChapterWithProgress = Chapter & {
+  status: ChapterStatus;
+  missions_completed: number;
+  total_score: number;
+};
+
 export type Mission = {
   id: string;
+  chapter_id: string;
+  mission_number: number;
   title: string;
-  description: string;
-  tips: string;
-  age_group: "7-9" | "10-12" | "13-15";
-  theme: "lanche" | "troco" | "economizar" | "conceitos_basicos" | "ganhar" | "gastar" | "investir";
+  mission_type: MissionType;
+  content: Record<string, unknown>;
+  correct_answer: Record<string, unknown>;
+  explanation: string | null;
   points_reward: number;
-  display_order: number;
-  content_key: string;
+  order_position: number;
+};
+
+export type MissionWithAttempt = Mission & {
+  is_completed: boolean;
+  best_score: number;
 };
 
 export type Child = {
   id: string;
   parent_id: string;
   name: string;
-  age_group: "7-9" | "10-12" | "13-15";
+  age_group: AgeGroup;
   total_points: number;
 };
 
+export type MissionAttempt = {
+  id: string;
+  child_id: string;
+  mission_id: string;
+  user_answer: Record<string, unknown>;
+  is_correct: boolean;
+  points_earned: number;
+  attempt_number: number;
+  completed_at: string;
+};
+
+// Legacy type - keep for backward compatibility
 export type CompletedMission = {
   id: string;
   child_id: string;

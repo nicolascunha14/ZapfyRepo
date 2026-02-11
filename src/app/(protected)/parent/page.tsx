@@ -31,18 +31,37 @@ export default async function ParentPage() {
     redirect("/onboarding");
   }
 
-  // Fetch total missions for this age group
-  const { count: totalMissions } = await supabase
-    .from("missions")
-    .select("*", { count: "exact", head: true })
+  // Fetch total missions for this age group (via chapters)
+  const { data: ageChapters } = await supabase
+    .from("chapters")
+    .select("id")
     .eq("age_group", child.age_group);
 
-  // Fetch completed missions with mission details
-  const { data: completedMissions } = await supabase
-    .from("completed_missions")
-    .select("id, mission_id, points_earned, completed_at, missions(title, theme)")
+  const chapterIds = (ageChapters ?? []).map((c) => c.id);
+  let totalMissions = 0;
+  if (chapterIds.length > 0) {
+    const { count } = await supabase
+      .from("missions")
+      .select("*", { count: "exact", head: true })
+      .in("chapter_id", chapterIds);
+    totalMissions = count ?? 0;
+  }
+
+  // Fetch completed missions (correct attempts) with details
+  const { data: completedAttempts } = await supabase
+    .from("mission_attempts")
+    .select("id, mission_id, points_earned, completed_at, missions(title, mission_type)")
     .eq("child_id", child.id)
+    .eq("is_correct", true)
     .order("completed_at", { ascending: true });
+
+  const completedMissions = (completedAttempts ?? []).map((a) => ({
+    id: a.id,
+    mission_id: a.mission_id,
+    points_earned: a.points_earned,
+    completed_at: a.completed_at,
+    missions: a.missions ? { title: (a.missions as any).title, theme: (a.missions as any).mission_type } : null,
+  }));
 
   return (
     <div className="space-y-6">
