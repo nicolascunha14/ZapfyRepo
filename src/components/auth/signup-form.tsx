@@ -67,7 +67,7 @@ function getPasswordStrength(password: string): { label: string; color: string; 
   return { label: "Excelente", color: "bg-emerald-500", width: "100%" };
 }
 
-export function SignupForm({ referralCode }: { referralCode?: string }) {
+export function SignupForm({ referralCode, redirectTo }: { referralCode?: string; redirectTo?: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -214,7 +214,7 @@ export function SignupForm({ referralCode }: { referralCode?: string }) {
           }
         }
 
-        router.push("/onboarding");
+        router.push(redirectTo || "/onboarding");
         router.refresh();
         return;
       }

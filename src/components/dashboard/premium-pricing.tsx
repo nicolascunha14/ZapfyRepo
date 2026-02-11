@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Crown,
@@ -16,6 +17,7 @@ import {
   Star,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
 
 type Feature = {
   label: string;
@@ -97,8 +99,28 @@ function FeatureCheck({ value }: { value: boolean | string }) {
   );
 }
 
+const STRIPE_URL = "https://buy.stripe.com/test_bJe4gBfxJ8Ml3Zd4c09k400";
+
 export function PremiumPricing() {
+  const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.is_anonymous || user?.user_metadata?.is_guest) {
+        setIsGuest(true);
+      }
+    });
+  }, []);
+
+  function handleSubscribeClick(e: React.MouseEvent) {
+    if (isGuest) {
+      e.preventDefault();
+      router.push("/signup?redirect=/premium");
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -202,12 +224,13 @@ export function PremiumPricing() {
               ))}
             </ul>
             <a
-              href="https://buy.stripe.com/test_bJe4gBfxJ8Ml3Zd4c09k400"
+              href={STRIPE_URL}
+              onClick={handleSubscribeClick}
               className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 px-4 py-3
                          text-white font-display font-bold text-sm hover:opacity-90 transition-all cursor-pointer shadow-md shadow-amber-200"
             >
               <Sparkles size={16} />
-              Assinar Premium
+              {isGuest ? "Criar conta e Assinar" : "Assinar Premium"}
             </a>
             <p className="text-[10px] text-center text-muted-foreground">
               Cancele quando quiser. Sem compromisso.
@@ -338,7 +361,11 @@ export function PremiumPricing() {
             <button
               type="button"
               onClick={() => {
-                window.location.href = "https://buy.stripe.com/test_bJe4gBfxJ8Ml3Zd4c09k400";
+                if (isGuest) {
+                  router.push("/signup?redirect=/premium");
+                  return;
+                }
+                window.location.href = STRIPE_URL;
               }}
               className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 px-4 py-3
                          text-white font-display font-bold text-sm hover:opacity-90 transition-all cursor-pointer"

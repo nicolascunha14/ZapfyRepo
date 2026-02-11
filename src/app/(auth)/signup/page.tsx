@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string }>;
+  searchParams: Promise<{ ref?: string; redirect?: string }>;
 }) {
-  const { ref } = await searchParams;
+  const { ref, redirect } = await searchParams;
 
   return (
     <div className="space-y-6">
@@ -25,7 +25,7 @@ export default async function SignupPage({
         </p>
       </div>
 
-      <OAuthButtons referralCode={ref} />
+      <OAuthButtons referralCode={ref} redirectTo={redirect} />
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -38,7 +38,7 @@ export default async function SignupPage({
         </div>
       </div>
 
-      <SignupForm referralCode={ref} />
+      <SignupForm referralCode={ref} redirectTo={redirect} />
 
       <p className="text-center text-sm text-muted-foreground">
         Já tem uma conta?{" "}
