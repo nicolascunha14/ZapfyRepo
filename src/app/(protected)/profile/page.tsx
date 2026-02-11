@@ -22,7 +22,7 @@ export default async function ProfilePage() {
   // Fetch child record
   const { data: child } = await supabase
     .from("children")
-    .select("id, name, age_group, total_points")
+    .select("id, name, age_group, total_points, xp, level, zapcoins, streak_current, streak_max")
     .eq("parent_id", user.id)
     .limit(1)
     .single();
@@ -96,18 +96,38 @@ export default async function ProfilePage() {
     }
   }
 
-  // Count total missions for this age group
-  const { count: totalMissions } = await supabase
-    .from("missions")
-    .select("*", { count: "exact", head: true })
+  // Count total missions for this age group (via chapters)
+  const { data: ageChapters } = await supabase
+    .from("chapters")
+    .select("id")
     .eq("age_group", child.age_group);
 
-  // Fetch completed missions with mission details
-  const { data: completedMissions } = await supabase
-    .from("completed_missions")
-    .select("id, mission_id, points_earned, completed_at, missions(title, theme)")
+  const chapterIds = (ageChapters ?? []).map((c) => c.id);
+  let totalMissions = 0;
+  if (chapterIds.length > 0) {
+    const { count } = await supabase
+      .from("missions")
+      .select("*", { count: "exact", head: true })
+      .in("chapter_id", chapterIds);
+    totalMissions = count ?? 0;
+  }
+
+  // Fetch completed missions (correct attempts) with mission details
+  const { data: completedAttempts } = await supabase
+    .from("mission_attempts")
+    .select("id, mission_id, points_earned, completed_at, missions(title, mission_type)")
     .eq("child_id", child.id)
+    .eq("is_correct", true)
     .order("completed_at", { ascending: false });
+
+  // Map to legacy format for ProfileView
+  const completedMissions = (completedAttempts ?? []).map((a) => ({
+    id: a.id,
+    mission_id: a.mission_id,
+    points_earned: a.points_earned,
+    completed_at: a.completed_at,
+    missions: a.missions ? { title: (a.missions as any).title, theme: (a.missions as any).mission_type } : null,
+  }));
 
   return (
     <div className="space-y-6">
@@ -138,6 +158,11 @@ export default async function ProfilePage() {
         initialName={child.name}
         ageGroup={child.age_group}
         totalPoints={child.total_points ?? 0}
+        xp={child.xp ?? 0}
+        level={child.level ?? 1}
+        zapcoins={child.zapcoins ?? 0}
+        streakCurrent={child.streak_current ?? 0}
+        streakMax={child.streak_max ?? 0}
         completedMissions={(completedMissions as any) ?? []}
         totalMissions={totalMissions ?? 0}
         referralCode={userData?.referral_code ?? ""}

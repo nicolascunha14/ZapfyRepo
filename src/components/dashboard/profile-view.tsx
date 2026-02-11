@@ -7,8 +7,6 @@ import {
   Pencil,
   Check,
   X,
-  Coins,
-  Star,
   Target,
   Calendar,
   LogOut,
@@ -21,10 +19,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { getLevel } from "@/lib/types";
 import { computeBadges, BADGES } from "@/lib/badges";
 import { Lock, Award } from "lucide-react";
 import { FriendsManager } from "@/components/dashboard/friends-manager";
+import { XPBar } from "@/components/gamification/XPBar";
+import { StreakDisplay } from "@/components/gamification/StreakDisplay";
+import { LeagueCard } from "@/components/gamification/LeagueCard";
 
 type CompletedMissionWithDetails = {
   id: string;
@@ -63,6 +63,11 @@ export function ProfileView({
   initialName,
   ageGroup,
   totalPoints,
+  xp,
+  level,
+  zapcoins,
+  streakCurrent,
+  streakMax,
   completedMissions,
   totalMissions,
   referralCode,
@@ -75,6 +80,11 @@ export function ProfileView({
   initialName: string;
   ageGroup: string;
   totalPoints: number;
+  xp: number;
+  level: number;
+  zapcoins: number;
+  streakCurrent: number;
+  streakMax: number;
   completedMissions: CompletedMissionWithDetails[];
   totalMissions: number;
   referralCode: string;
@@ -90,15 +100,7 @@ export function ProfileView({
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const level = getLevel(totalPoints);
   const completedCount = completedMissions.length;
-  const avgPoints =
-    completedCount > 0
-      ? Math.round(
-          completedMissions.reduce((sum, m) => sum + m.points_earned, 0) /
-            completedCount
-        )
-      : 0;
 
   async function handleSaveName() {
     const trimmed = nameInput.trim();
@@ -143,7 +145,7 @@ export function ProfileView({
 
   return (
     <div className="space-y-6">
-      {/* Profile header card */}
+      {/* Profile header card with avatar */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -151,9 +153,17 @@ export function ProfileView({
         <Card>
           <CardContent className="pt-6 pb-6">
             <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="bg-gradient-to-br from-primary-500 to-zapfy-mint w-16 h-16 rounded-2xl flex items-center justify-center shrink-0">
-                <User size={28} className="text-white" />
+              {/* Avatar with customize button */}
+              <div className="relative">
+                <div className="bg-gradient-to-br from-primary-500 to-zapfy-mint w-16 h-16 rounded-2xl flex items-center justify-center shrink-0">
+                  <User size={28} className="text-white" />
+                </div>
+                <button
+                  className="absolute -bottom-1 -right-1 bg-white border border-border rounded-full w-6 h-6 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
+                  title="Personalizar avatar"
+                >
+                  <Pencil size={10} className="text-muted-foreground" />
+                </button>
               </div>
 
               <div className="flex-1 min-w-0">
@@ -207,13 +217,13 @@ export function ProfileView({
                   </div>
                 )}
 
-                {/* Age group + level */}
+                {/* Age group + zapcoins */}
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">
                     {ageGroup} anos
                   </span>
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zapfy-coin/20 text-amber-700">
-                    {level.name}
+                    🪙 {zapcoins.toLocaleString("pt-BR")}
                   </span>
                 </div>
               </div>
@@ -222,24 +232,34 @@ export function ProfileView({
         </Card>
       </motion.div>
 
-      {/* Points badge */}
+      {/* XP Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <XPBar xp={xp} level={level} />
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Streak current / max */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="bg-gradient-to-br from-primary-500 to-zapfy-mint border-0 text-white">
-          <CardContent className="pt-6 pb-6">
+        <Card>
+          <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-white/80 font-medium">Total de pontos</p>
-                <p className="text-4xl font-display font-bold tabular-nums mt-1">
-                  {totalPoints}
+              <StreakDisplay streak={streakCurrent} />
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Recorde</p>
+                <p className="font-display font-bold text-lg text-foreground">
+                  🔥 {streakMax} dias
                 </p>
-                <p className="text-sm text-white/70 mt-0.5">Zap Coins</p>
-              </div>
-              <div className="bg-white/20 rounded-2xl p-4">
-                <Coins size={36} className="text-white" />
               </div>
             </div>
           </CardContent>
@@ -251,7 +271,7 @@ export function ProfileView({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="grid grid-cols-3 gap-3"
+        className="grid grid-cols-2 gap-3"
       >
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
@@ -264,20 +284,11 @@ export function ProfileView({
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <Star size={20} className="mx-auto text-zapfy-coin mb-1" />
+            <span className="text-xl block mb-1">🪙</span>
             <p className="text-xl font-display font-bold tabular-nums">
-              {totalPoints}
+              {zapcoins.toLocaleString("pt-BR")}
             </p>
-            <p className="text-[10px] text-muted-foreground">Pontos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 pb-4 text-center">
-            <Coins size={20} className="mx-auto text-primary-500 mb-1" />
-            <p className="text-xl font-display font-bold tabular-nums">
-              {avgPoints}
-            </p>
-            <p className="text-[10px] text-muted-foreground">Media/missao</p>
+            <p className="text-[10px] text-muted-foreground">Zap Coins</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -355,12 +366,28 @@ export function ProfileView({
         })()}
       </motion.div>
 
+      {/* League card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.19 }}
+      >
+        <LeagueCard
+          leagueName="Bronze"
+          leagueIcon="🥉"
+          position={1}
+          totalPlayers={1}
+          weeklyXP={xp}
+          promotionThreshold={3}
+        />
+      </motion.div>
+
       {/* Referral / Invite section */}
       {referralCode && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
+          transition={{ delay: 0.2 }}
         >
           <Card className="border-primary-200 bg-gradient-to-br from-primary-50 to-white">
             <CardContent className="pt-6 pb-6 space-y-4">
@@ -426,7 +453,7 @@ export function ProfileView({
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.25 }}
       >
         <Card>
           <CardContent className="pt-6">
@@ -443,7 +470,7 @@ export function ProfileView({
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.3 }}
       >
         <h3 className="font-display font-bold text-lg mb-3">
           Historico de Missoes
@@ -459,7 +486,7 @@ export function ProfileView({
                   key={cm.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.25 + i * 0.04 }}
+                  transition={{ delay: 0.35 + i * 0.04 }}
                 >
                   <Card>
                     <CardContent className="py-3 px-4">
@@ -481,7 +508,7 @@ export function ProfileView({
                           </div>
                         </div>
                         <div className="flex items-center gap-1 bg-zapfy-coin/15 rounded-full px-2.5 py-1 shrink-0">
-                          <Coins size={12} className="text-amber-600" />
+                          <span className="text-xs">🪙</span>
                           <span className="text-xs font-bold text-amber-700 tabular-nums">
                             +{cm.points_earned}
                           </span>
@@ -513,7 +540,7 @@ export function ProfileView({
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.35 }}
       >
         <form action="/auth/signout" method="post">
           <button

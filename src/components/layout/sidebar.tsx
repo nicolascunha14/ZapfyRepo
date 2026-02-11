@@ -28,9 +28,13 @@ const navItems = [
 export function Sidebar({
   isAdmin,
   points,
+  zapcoins,
+  streak,
 }: {
   isAdmin: boolean;
   points: number;
+  zapcoins: number;
+  streak: number;
 }) {
   const pathname = usePathname();
 
@@ -46,11 +50,21 @@ export function Sidebar({
       {/* Logo + Points */}
       <div className="px-5 pt-5 pb-3 space-y-3">
         <Logo size="sm" />
-        <div className="flex items-center gap-1.5 bg-zapfy-coin/20 rounded-full px-3 py-1.5 w-fit">
-          <Coins size={16} className="text-zapfy-coin" />
-          <span className="text-sm font-bold text-amber-700 tabular-nums">
-            {points.toLocaleString("pt-BR")}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 bg-zapfy-coin/20 rounded-full px-3 py-1.5">
+            <span className="text-sm">🪙</span>
+            <span className="text-sm font-bold text-amber-700 tabular-nums">
+              {zapcoins.toLocaleString("pt-BR")}
+            </span>
+          </div>
+          {streak > 0 && (
+            <div className="flex items-center gap-1 bg-orange-50 rounded-full px-2.5 py-1.5">
+              <span className="text-sm">🔥</span>
+              <span className="text-sm font-bold text-orange-600 tabular-nums">
+                {streak}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

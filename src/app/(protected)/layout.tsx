@@ -18,14 +18,16 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
-  if (user.user_metadata?.onboarding_completed !== true) {
+  const isGuest = user.is_anonymous === true || user.user_metadata?.is_guest === true;
+
+  if (!isGuest && user.user_metadata?.onboarding_completed !== true) {
     redirect("/onboarding");
   }
 
   const [{ data: child }, { data: profile }] = await Promise.all([
     supabase
       .from("children")
-      .select("id, total_points")
+      .select("id, total_points, xp, level, zapcoins, streak_current, streak_max, hearts, hearts_last_updated, age_group, name")
       .eq("parent_id", user.id)
       .limit(1)
       .single(),
@@ -39,11 +41,13 @@ export default async function ProtectedLayout({
   const isAdmin = profile?.role === "admin";
   const points = child?.total_points ?? 0;
   const childId = child?.id ?? "";
+  const zapcoins = child?.zapcoins ?? 0;
+  const streakCurrent = child?.streak_current ?? 0;
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <Sidebar isAdmin={isAdmin} points={points} />
-      <MobileHeader childId={childId} initialPoints={points} />
+      <Sidebar isAdmin={isAdmin} points={points} zapcoins={zapcoins} streak={streakCurrent} />
+      <MobileHeader childId={childId} initialPoints={points} zapcoins={zapcoins} streak={streakCurrent} />
       <main className="lg:ml-60 pb-20 lg:pb-0 px-4 py-6 lg:px-8">
         {children}
       </main>

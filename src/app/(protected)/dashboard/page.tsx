@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Target, Crown, Sparkles, ChevronRight } from "lucide-react";
+import { Target, Crown, Sparkles, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
-import { PointsDisplay } from "@/components/dashboard/points-display";
-import { ChapterList } from "@/components/dashboard/chapter-list";
+import { MissionPath } from "@/components/dashboard/mission-path";
 import { DailyBonusCard } from "@/components/dashboard/daily-bonus-card";
 import { BadgeNotification } from "@/components/dashboard/badge-notification";
-import type { ChapterWithProgress } from "@/lib/types";
+import { GuestBanner } from "@/components/dashboard/guest-banner";
+import { XPBar } from "@/components/gamification/XPBar";
+import { StreakDisplay } from "@/components/gamification/StreakDisplay";
+import { ZapcoinsDisplay } from "@/components/gamification/ZapcoinsDisplay";
+import { LeagueCard } from "@/components/gamification/LeagueCard";
+import type { ChapterWithProgress, Mission } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Dashboard - Zapfy",
@@ -20,6 +24,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   const meta = user?.user_metadata;
+  const isGuest = user?.is_anonymous === true || meta?.is_guest === true;
   const displayName =
     meta?.display_name ||
     meta?.full_name ||
@@ -27,18 +32,20 @@ export default async function DashboardPage() {
     user?.email?.split("@")[0] ||
     "Explorador";
 
-  // Fetch child record
+  // Fetch child record with gamification fields
   const { data: child } = await supabase
     .from("children")
-    .select("id, name, age_group, total_points")
+    .select("id, name, age_group, total_points, xp, level, zapcoins, streak_current, streak_max, hearts, hearts_last_updated, league_xp_this_week")
     .eq("parent_id", user!.id)
     .limit(1)
     .single();
 
   // Fetch chapters with progress for child's age group
   let chapters: ChapterWithProgress[] = [];
-  let completedChapters = 0;
   let totalMissionsCompleted = 0;
+  let activeChapterIndex = 0;
+  let activeMissions: Mission[] = [];
+  let completedMissionIds: string[] = [];
 
   if (child) {
     const { data: chaptersData } = await supabase
@@ -68,20 +75,17 @@ export default async function DashboardPage() {
         };
       });
 
-      completedChapters = chapters.filter((c) => c.status === "completed").length;
       totalMissionsCompleted = chapters.reduce((sum, c) => sum + c.missions_completed, 0);
     }
 
     // If no progress records exist, initialize them
     if (chapters.length > 0 && !chapters.some((c) => c.status !== "locked")) {
-      // Check if there are any progress records at all
       const { count } = await supabase
         .from("user_progress")
         .select("*", { count: "exact", head: true })
         .eq("child_id", child.id);
 
       if (count === 0) {
-        // Initialize progress: chapter 1 = unlocked, rest = locked
         const progressInserts = chapters.map((ch) => ({
           child_id: child.id,
           chapter_id: ch.id,
@@ -90,11 +94,41 @@ export default async function DashboardPage() {
 
         await supabase.from("user_progress").insert(progressInserts);
 
-        // Update local state
         chapters = chapters.map((ch) => ({
           ...ch,
           status: ch.chapter_number === 1 ? "unlocked" as const : "locked" as const,
         }));
+      }
+    }
+
+    // Find active chapter (first unlocked/in_progress)
+    const activeIdx = chapters.findIndex(
+      (c) => c.status === "unlocked" || c.status === "in_progress"
+    );
+    activeChapterIndex = activeIdx >= 0 ? activeIdx : 0;
+
+    // Fetch missions for the active chapter
+    const activeChapter = chapters[activeChapterIndex];
+    if (activeChapter) {
+      const { data: missionsData } = await supabase
+        .from("missions")
+        .select("*")
+        .eq("chapter_id", activeChapter.id)
+        .order("order_position", { ascending: true });
+
+      activeMissions = missionsData ?? [];
+
+      // Fetch completed mission IDs
+      const missionIds = activeMissions.map((m) => m.id);
+      if (missionIds.length > 0) {
+        const { data: attempts } = await supabase
+          .from("mission_attempts")
+          .select("mission_id")
+          .eq("child_id", child.id)
+          .eq("is_correct", true)
+          .in("mission_id", missionIds);
+
+        completedMissionIds = [...new Set((attempts ?? []).map((a) => a.mission_id))];
       }
     }
   }
@@ -114,6 +148,24 @@ export default async function DashboardPage() {
   const currentStreak = todayLogin?.streak_count ?? 0;
   const totalMissions = chapters.length * 10;
 
+  // League data - calculate position from ranking
+  let leaguePosition = 1;
+  let leagueTotalPlayers = 1;
+  if (child) {
+    const { data: rankingData } = await supabase
+      .from("children")
+      .select("id")
+      .eq("age_group", child.age_group)
+      .order("total_points", { ascending: false })
+      .limit(50);
+
+    if (rankingData) {
+      leagueTotalPlayers = rankingData.length;
+      const idx = rankingData.findIndex((r) => r.id === child.id);
+      leaguePosition = idx >= 0 ? idx + 1 : rankingData.length;
+    }
+  }
+
   return (
     <div>
       {child ? (
@@ -127,29 +179,66 @@ export default async function DashboardPage() {
             initialStreak={currentStreak}
           />
 
-          {/* Two-column layout: chapters (left) + info panel (right) */}
+          {/* Gamified header */}
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-primary-500 to-zapfy-mint w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                  <User size={20} className="text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-display font-bold text-foreground leading-tight">
+                    {child.name || displayName}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    {child.age_group} anos
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {(child.streak_current ?? 0) > 0 && (
+                  <div className="flex items-center gap-1 bg-orange-50 rounded-full px-2.5 py-1.5">
+                    <span className="text-sm">🔥</span>
+                    <span className="text-sm font-bold text-orange-600 tabular-nums">
+                      {child.streak_current}
+                    </span>
+                  </div>
+                )}
+                <ZapcoinsDisplay amount={child.zapcoins ?? 0} />
+              </div>
+            </div>
+            <XPBar xp={child.xp ?? 0} level={child.level ?? 1} />
+          </div>
+
+          {/* Two-column layout: mission path (left) + info panel (right) */}
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Chapters - main content, shown FIRST on mobile */}
-            <div className="flex-1 min-w-0 max-w-2xl">
+            {/* Mission path - main content */}
+            <div className="lg:w-[580px] lg:shrink-0">
               {chapters.length > 0 && (
-                <ChapterList
+                <MissionPath
                   chapters={chapters}
+                  activeChapterIndex={activeChapterIndex}
+                  missions={activeMissions}
+                  completedMissionIds={completedMissionIds}
                   childId={child.id}
                 />
               )}
             </div>
 
-            {/* Right info panel - fixed width, sticky on desktop */}
-            <div className="lg:w-80 lg:shrink-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
-              {/* Greeting */}
-              <div>
-                <h1 className="text-xl font-display font-bold text-foreground">
-                  Olá, {displayName}!
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Sua aventura financeira começa aqui!
-                </p>
-              </div>
+            {/* Right info panel - fills remaining space */}
+            <div className="flex-1 min-w-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
+              {/* Guest banner */}
+              {isGuest && <GuestBanner />}
+
+              {/* Streak card */}
+              <Card>
+                <CardContent className="pt-4 pb-4">
+                  <StreakDisplay
+                    streak={child.streak_current ?? 0}
+                    isNewRecord={(child.streak_current ?? 0) > 0 && (child.streak_current ?? 0) >= (child.streak_max ?? 0)}
+                  />
+                </CardContent>
+              </Card>
 
               {/* Daily bonus */}
               <DailyBonusCard
@@ -158,30 +247,35 @@ export default async function DashboardPage() {
                 initialClaimedToday={claimedToday}
               />
 
-              {/* Stats */}
-              <div className="space-y-3">
-                <PointsDisplay
-                  childId={child.id}
-                  initialPoints={child.total_points ?? 0}
-                />
-                <Card>
-                  <CardContent className="pt-4 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-zapfy-mint/20 rounded-xl p-2">
-                        <Target size={20} className="text-zapfy-mint" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-display font-bold">
-                          {totalMissionsCompleted} / {totalMissions}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Missões Completas
-                        </p>
-                      </div>
+              {/* Missions count */}
+              <Card>
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-zapfy-mint/20 rounded-xl p-2">
+                      <Target size={20} className="text-zapfy-mint" />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <div>
+                      <p className="text-lg font-display font-bold">
+                        {totalMissionsCompleted} / {totalMissions}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Missões Completas
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* League card */}
+              <LeagueCard
+                leagueName="Bronze"
+                leagueIcon="🥉"
+                position={leaguePosition}
+                totalPlayers={leagueTotalPlayers}
+                weeklyXP={child.league_xp_this_week ?? 0}
+                promotionThreshold={3}
+                relegationThreshold={5}
+              />
 
               {/* Premium upsell */}
               <Link href="/premium" className="block">

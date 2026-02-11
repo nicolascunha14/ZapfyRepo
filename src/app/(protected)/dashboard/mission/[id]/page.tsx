@@ -21,12 +21,12 @@ export default async function MissionPage({
 
   const { data: child } = await supabase
     .from("children")
-    .select("id, age_group")
+    .select("id, age_group, hearts, hearts_last_updated, zapcoins, xp, level")
     .eq("parent_id", user.id)
     .limit(1)
     .single();
 
-  if (!child) redirect("/onboarding");
+  if (!child) redirect("/dashboard");
 
   // Fetch mission
   const { data: mission } = await supabase
@@ -114,6 +114,12 @@ export default async function MissionPage({
       currentMissionNumber={currentMissionNumber}
       totalMissions={totalMissions}
       completedMissions={progress.missions_completed ?? 0}
+      ageGroup={child.age_group}
+      initialHearts={child.hearts ?? 5}
+      heartsLastUpdated={child.hearts_last_updated ?? new Date().toISOString()}
+      initialZapcoins={child.zapcoins ?? 0}
+      initialXP={child.xp ?? 0}
+      initialLevel={child.level ?? 1}
     />
   );
 }
