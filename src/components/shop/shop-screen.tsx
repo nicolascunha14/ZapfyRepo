@@ -235,27 +235,19 @@ export function ShopScreen({
           </div>
         </TabsContent>
 
-        {/* Premium Tab */}
+        {/* Premium Tab — suspended */}
         <TabsContent value="premium" className="mt-5">
-          <div className="space-y-4">
-            {premiumItems.map((item) => {
-              const durationDays = (item.metadata as any)?.duration_days ?? 7;
-              return (
-                <PremiumCard
-                  key={item.id}
-                  name={item.name}
-                  description={item.description}
-                  icon={item.icon}
-                  price={item.price_zapcoins}
-                  durationDays={durationDays}
-                  onBuy={() => handleBuyPremium(item)}
-                  canAfford={zapcoins >= item.price_zapcoins}
-                  loading={loading === item.id}
-                  isPremium={isPremium}
-                  expiresAt={premiumExpiresAt}
-                />
-              );
-            })}
+          <div className="text-center py-10 space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center">
+              <Crown size={28} className="text-amber-400" />
+            </div>
+            <h3 className="font-display font-bold text-lg text-foreground">
+              Premium em breve!
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+              Estamos preparando novidades incriveis para o plano Premium.
+              Fique ligado!
+            </p>
           </div>
         </TabsContent>
       </Tabs>

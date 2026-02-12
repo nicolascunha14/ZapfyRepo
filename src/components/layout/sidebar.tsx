@@ -101,11 +101,14 @@ export function Sidebar({
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
             isActive("/premium")
               ? "bg-amber-50 text-amber-600"
-              : "text-amber-500 hover:bg-amber-50 hover:text-amber-600"
+              : "text-amber-400 hover:bg-amber-50 hover:text-amber-500"
           }`}
         >
           <Crown size={20} />
           Premium
+          <span className="text-[9px] bg-amber-200 text-amber-700 font-bold px-1.5 py-0.5 rounded-full ml-auto">
+            BREVE
+          </span>
         </Link>
 
         {isAdmin && (

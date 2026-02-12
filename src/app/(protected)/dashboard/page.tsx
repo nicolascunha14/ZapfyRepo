@@ -291,24 +291,25 @@ export default async function DashboardPage() {
                 relegationThreshold={5}
               />
 
-              {/* Premium upsell */}
+              {/* Premium upsell — suspended */}
               <Link href="/premium" className="block">
-                <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all">
+                <Card className="border-amber-200/60 bg-gradient-to-r from-amber-50/50 to-orange-50/50 opacity-75">
                   <CardContent className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-amber-100 rounded-xl p-2 shrink-0">
-                        <Crown size={18} className="text-amber-500" />
+                        <Crown size={18} className="text-amber-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-display font-bold text-sm text-amber-900">
+                        <p className="font-display font-bold text-sm text-amber-800">
                           Zapfy Premium
                         </p>
-                        <p className="text-[11px] text-amber-700/70 flex items-center gap-1 mt-0.5">
-                          <Sparkles size={10} />
-                          Badges exclusivos e mais
+                        <p className="text-[11px] text-amber-600/70 flex items-center gap-1 mt-0.5">
+                          Em breve disponivel!
                         </p>
                       </div>
-                      <ChevronRight size={16} className="text-amber-400 shrink-0" />
+                      <span className="text-[10px] bg-amber-200 text-amber-700 font-bold px-2 py-0.5 rounded-full shrink-0">
+                        EM BREVE
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
