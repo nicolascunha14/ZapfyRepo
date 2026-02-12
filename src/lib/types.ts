@@ -134,7 +134,7 @@ export type ThemeColors = {
 };
 
 export const THEME_META: Record<string, { name: string; icon: string; colors: ThemeColors }> = {
-  default: { name: "Zapfy Clássico", icon: "⚡", colors: { primary: "#6C5CE7", secondary: "#00D2D3", accent: "#FECA57" } },
+  default: { name: "Zapfy Clássico", icon: "⚡", colors: { primary: "#1E88E5", secondary: "#F59E0B", accent: "#6EE7B7" } },
   ocean: { name: "Oceano Profundo", icon: "🌊", colors: { primary: "#0984E3", secondary: "#00CEC9", accent: "#74B9FF" } },
   forest: { name: "Floresta Encantada", icon: "🌿", colors: { primary: "#00B894", secondary: "#55EFC4", accent: "#BADC58" } },
   sunset: { name: "Pôr do Sol", icon: "🌅", colors: { primary: "#E17055", secondary: "#FDCB6E", accent: "#FAB1A0" } },

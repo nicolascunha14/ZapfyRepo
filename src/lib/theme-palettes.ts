@@ -1,0 +1,270 @@
+// Full color palettes for each theme
+// Each palette provides primary and secondary scales (50-900),
+// plus accent colors, gradients, and shadow tones.
+
+export type ThemePalette = {
+  primary: Record<string, string>;
+  secondary: Record<string, string>;
+  mint: string;
+  coin: string;
+  gradientHero: string;
+  shadowColor: string;
+};
+
+export const THEME_PALETTES: Record<string, ThemePalette> = {
+  // Default: Zapfy Blue (matches globals.css defaults)
+  default: {
+    primary: {
+      "50": "#E3F2FD",
+      "100": "#BBDEFB",
+      "200": "#90CAF9",
+      "300": "#64B5F6",
+      "400": "#42A5F5",
+      "500": "#1E88E5",
+      "600": "#1976D2",
+      "700": "#1565C0",
+      "800": "#0D47A1",
+      "900": "#0A2E6B",
+    },
+    secondary: {
+      "50": "#FFFBEB",
+      "100": "#FEF3C7",
+      "200": "#FDE68A",
+      "300": "#FCD34D",
+      "400": "#FBBF24",
+      "500": "#F59E0B",
+      "600": "#D97706",
+      "700": "#B45309",
+      "800": "#92400E",
+      "900": "#78350F",
+    },
+    mint: "#6EE7B7",
+    coin: "#FCD34D",
+    gradientHero: "linear-gradient(135deg, #1E88E5, #6EE7B7)",
+    shadowColor: "30, 136, 229",
+  },
+
+  // Ocean: Deep blues and teals
+  ocean: {
+    primary: {
+      "50": "#E0F4FF",
+      "100": "#B3E5FC",
+      "200": "#81D4FA",
+      "300": "#4FC3F7",
+      "400": "#29B6F6",
+      "500": "#0984E3",
+      "600": "#0277BD",
+      "700": "#01579B",
+      "800": "#013F6E",
+      "900": "#012A4A",
+    },
+    secondary: {
+      "50": "#E0FFFE",
+      "100": "#B2F5EA",
+      "200": "#81E6D9",
+      "300": "#4FD1C5",
+      "400": "#38B2AC",
+      "500": "#00CEC9",
+      "600": "#00A8A3",
+      "700": "#00827D",
+      "800": "#005C57",
+      "900": "#003D38",
+    },
+    mint: "#00CEC9",
+    coin: "#74B9FF",
+    gradientHero: "linear-gradient(135deg, #0984E3, #00CEC9)",
+    shadowColor: "9, 132, 227",
+  },
+
+  // Forest: Greens and limes
+  forest: {
+    primary: {
+      "50": "#E6FFF5",
+      "100": "#B2F5EA",
+      "200": "#81E6D9",
+      "300": "#4FD1C5",
+      "400": "#38B2AC",
+      "500": "#00B894",
+      "600": "#009B7D",
+      "700": "#007F66",
+      "800": "#006350",
+      "900": "#004A3B",
+    },
+    secondary: {
+      "50": "#F0FFF4",
+      "100": "#C6F6D5",
+      "200": "#9AE6B4",
+      "300": "#68D391",
+      "400": "#55EFC4",
+      "500": "#48BB78",
+      "600": "#38A169",
+      "700": "#2F855A",
+      "800": "#276749",
+      "900": "#22543D",
+    },
+    mint: "#55EFC4",
+    coin: "#BADC58",
+    gradientHero: "linear-gradient(135deg, #00B894, #55EFC4)",
+    shadowColor: "0, 184, 148",
+  },
+
+  // Sunset: Coral, orange, warm tones
+  sunset: {
+    primary: {
+      "50": "#FFF5F0",
+      "100": "#FEDDCC",
+      "200": "#FDC4A8",
+      "300": "#FCAB84",
+      "400": "#FB9260",
+      "500": "#E17055",
+      "600": "#C4573F",
+      "700": "#A73E2A",
+      "800": "#8A2515",
+      "900": "#6D0C00",
+    },
+    secondary: {
+      "50": "#FFFCEB",
+      "100": "#FFF4BF",
+      "200": "#FFEC93",
+      "300": "#FFE467",
+      "400": "#FFDC3B",
+      "500": "#FDCB6E",
+      "600": "#E0B050",
+      "700": "#C39532",
+      "800": "#A67A14",
+      "900": "#896000",
+    },
+    mint: "#FDCB6E",
+    coin: "#FAB1A0",
+    gradientHero: "linear-gradient(135deg, #E17055, #FDCB6E)",
+    shadowColor: "225, 112, 85",
+  },
+
+  // Space: Purples and pinks
+  space: {
+    primary: {
+      "50": "#F0EDFF",
+      "100": "#D9D4FF",
+      "200": "#C2BBFF",
+      "300": "#ABA2FF",
+      "400": "#9489FF",
+      "500": "#6C5CE7",
+      "600": "#5A4BC7",
+      "700": "#483AA7",
+      "800": "#362987",
+      "900": "#241867",
+    },
+    secondary: {
+      "50": "#F3F0FF",
+      "100": "#E5E0FF",
+      "200": "#D7D0FF",
+      "300": "#C9C0FE",
+      "400": "#BBB0FE",
+      "500": "#A29BFE",
+      "600": "#8A83DE",
+      "700": "#726BBE",
+      "800": "#5A539E",
+      "900": "#423B7E",
+    },
+    mint: "#A29BFE",
+    coin: "#FD79A8",
+    gradientHero: "linear-gradient(135deg, #6C5CE7, #A29BFE)",
+    shadowColor: "108, 92, 231",
+  },
+
+  // Candy: Pinks and warm accents
+  candy: {
+    primary: {
+      "50": "#FFF0F6",
+      "100": "#FFD6E7",
+      "200": "#FFBCD8",
+      "300": "#FFA2C9",
+      "400": "#FF88BA",
+      "500": "#E84393",
+      "600": "#CC2F7D",
+      "700": "#B01B67",
+      "800": "#940751",
+      "900": "#78003B",
+    },
+    secondary: {
+      "50": "#FFF0F5",
+      "100": "#FFD9E8",
+      "200": "#FFC2DB",
+      "300": "#FFABCE",
+      "400": "#FF94C1",
+      "500": "#FD79A8",
+      "600": "#E0638E",
+      "700": "#C34D74",
+      "800": "#A6375A",
+      "900": "#892140",
+    },
+    mint: "#FD79A8",
+    coin: "#FDCB6E",
+    gradientHero: "linear-gradient(135deg, #E84393, #FD79A8)",
+    shadowColor: "232, 67, 147",
+  },
+
+  // Ninja: Dark, sleek, minimal
+  ninja: {
+    primary: {
+      "50": "#ECEFF1",
+      "100": "#CFD8DC",
+      "200": "#B0BEC5",
+      "300": "#90A4AE",
+      "400": "#78909C",
+      "500": "#2D3436",
+      "600": "#252B2D",
+      "700": "#1D2124",
+      "800": "#15171B",
+      "900": "#0D0D12",
+    },
+    secondary: {
+      "50": "#F2F3F4",
+      "100": "#D8DBDD",
+      "200": "#BEC3C6",
+      "300": "#A4ABAF",
+      "400": "#8A9398",
+      "500": "#636E72",
+      "600": "#535C5F",
+      "700": "#434A4C",
+      "800": "#333839",
+      "900": "#232626",
+    },
+    mint: "#00CEC9",
+    coin: "#00CEC9",
+    gradientHero: "linear-gradient(135deg, #2D3436, #636E72)",
+    shadowColor: "45, 52, 54",
+  },
+
+  // Golden: Rich golds and warm yellows
+  golden: {
+    primary: {
+      "50": "#FFF9E6",
+      "100": "#FFEFC2",
+      "200": "#FFE59E",
+      "300": "#FFDB7A",
+      "400": "#FFD156",
+      "500": "#D4A017",
+      "600": "#B88A12",
+      "700": "#9C740D",
+      "800": "#805E08",
+      "900": "#644803",
+    },
+    secondary: {
+      "50": "#FFFDE6",
+      "100": "#FFF8BF",
+      "200": "#FFF399",
+      "300": "#FFEE73",
+      "400": "#FFE94D",
+      "500": "#F9CA24",
+      "600": "#DDB21E",
+      "700": "#C19A18",
+      "800": "#A58212",
+      "900": "#896A0C",
+    },
+    mint: "#F9CA24",
+    coin: "#FFF3BF",
+    gradientHero: "linear-gradient(135deg, #D4A017, #F9CA24)",
+    shadowColor: "212, 160, 23",
+  },
+};
