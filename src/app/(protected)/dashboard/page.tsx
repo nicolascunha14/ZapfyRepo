@@ -254,16 +254,6 @@ export default async function DashboardPage() {
               {/* Guest banner */}
               {isGuest && <GuestBanner />}
 
-              {/* Streak card */}
-              <Card>
-                <CardContent className="pt-4 pb-4">
-                  <StreakDisplay
-                    streak={child.streak_current ?? 0}
-                    isNewRecord={(child.streak_current ?? 0) > 0 && (child.streak_current ?? 0) >= (child.streak_max ?? 0)}
-                  />
-                </CardContent>
-              </Card>
-
               {/* Daily bonus */}
               <DailyBonusCard
                 childId={child.id}
