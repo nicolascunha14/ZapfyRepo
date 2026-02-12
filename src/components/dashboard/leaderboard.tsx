@@ -15,9 +15,9 @@ type RankedChild = {
 };
 
 const AGE_TABS = [
-  { key: "7-9", label: "7-9 anos", color: "bg-emerald-500", ring: "ring-emerald-200" },
-  { key: "10-12", label: "10-12 anos", color: "bg-primary-500", ring: "ring-primary-200" },
-  { key: "13-15", label: "13-15 anos", color: "bg-violet-500", ring: "ring-violet-200" },
+  { key: "7-9", label: "Iniciante", subtitle: "7-9 anos", color: "bg-emerald-500", ring: "ring-emerald-200" },
+  { key: "10-12", label: "Intermediário", subtitle: "10-12 anos", color: "bg-primary-500", ring: "ring-primary-200" },
+  { key: "13-15", label: "Avançado", subtitle: "13-15 anos", color: "bg-violet-500", ring: "ring-violet-200" },
 ] as const;
 
 function MedalIcon({ position }: { position: number }) {
@@ -309,19 +309,19 @@ export function Leaderboard({
                   key={tab.key}
                   type="button"
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-xl text-center font-display font-bold transition-all cursor-pointer ${
                     isActive
                       ? `${tab.color} text-white shadow-md ring-2 ${tab.ring}`
                       : "bg-white border border-border/50 text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  {tab.label}
+                  <span className="text-sm block">{tab.label}</span>
                   <span
-                    className={`ml-1.5 text-[10px] font-medium ${
+                    className={`text-[10px] font-medium ${
                       isActive ? "text-white/70" : "text-muted-foreground/60"
                     }`}
                   >
-                    ({count})
+                    {tab.subtitle} ({count})
                   </span>
                 </button>
               );
