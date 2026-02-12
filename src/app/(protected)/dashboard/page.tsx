@@ -211,7 +211,7 @@ export default async function DashboardPage() {
                     {child.name || displayName}
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    {child.age_group} anos
+                    {child.age_group === "7-9" ? "Iniciante" : child.age_group === "10-12" ? "Intermediário" : "Avançado"}
                   </p>
                 </div>
               </div>
