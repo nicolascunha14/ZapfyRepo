@@ -35,6 +35,7 @@ export default async function RankingPage() {
         .select("id, name, age_group, total_points")
         .eq("age_group", "7-9")
         .neq("is_guest", true)
+        .neq("name", "Explorador")
         .order("total_points", { ascending: false })
         .limit(50),
       supabase
@@ -42,6 +43,7 @@ export default async function RankingPage() {
         .select("id, name, age_group, total_points")
         .eq("age_group", "10-12")
         .neq("is_guest", true)
+        .neq("name", "Explorador")
         .order("total_points", { ascending: false })
         .limit(50),
       supabase
@@ -49,6 +51,7 @@ export default async function RankingPage() {
         .select("id, name, age_group, total_points")
         .eq("age_group", "13-15")
         .neq("is_guest", true)
+        .neq("name", "Explorador")
         .order("total_points", { ascending: false })
         .limit(50),
     ]);

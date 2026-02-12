@@ -15,9 +15,9 @@ type RankedChild = {
 };
 
 const AGE_TABS = [
-  { key: "7-9", label: "Iniciante", subtitle: "7-9 anos", color: "bg-emerald-500", ring: "ring-emerald-200" },
-  { key: "10-12", label: "Intermediário", subtitle: "10-12 anos", color: "bg-primary-500", ring: "ring-primary-200" },
-  { key: "13-15", label: "Avançado", subtitle: "13-15 anos", color: "bg-violet-500", ring: "ring-violet-200" },
+  { key: "7-9", label: "Iniciante", color: "bg-emerald-500", ring: "ring-emerald-200" },
+  { key: "10-12", label: "Intermediário", color: "bg-primary-500", ring: "ring-primary-200" },
+  { key: "13-15", label: "Avançado", color: "bg-violet-500", ring: "ring-violet-200" },
 ] as const;
 
 function MedalIcon({ position }: { position: number }) {
@@ -315,14 +315,7 @@ export function Leaderboard({
                       : "bg-white border border-border/50 text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  <span className="text-sm block">{tab.label}</span>
-                  <span
-                    className={`text-[10px] font-medium ${
-                      isActive ? "text-white/70" : "text-muted-foreground/60"
-                    }`}
-                  >
-                    {tab.subtitle} ({count})
-                  </span>
+                  {tab.label}
                 </button>
               );
             })}

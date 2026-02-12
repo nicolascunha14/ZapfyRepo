@@ -157,6 +157,7 @@ export default async function DashboardPage() {
       .select("id")
       .eq("age_group", child.age_group)
       .neq("is_guest", true)
+      .neq("name", "Explorador")
       .order("total_points", { ascending: false })
       .limit(50);
 
