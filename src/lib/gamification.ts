@@ -406,17 +406,20 @@ export async function completeMission({
   supabase,
 }: CompleteMissionParams) {
 
-  // 1. XP e Zapcoins ganhos
-  const xpMap: Record<number, number> = { 1: 100, 2: 70 };
-  const xpEarned = isCorrect ? (xpMap[attemptNumber] ?? 50) : 0;
-  const zapcoinsEarned = isCorrect ? 5 : 0;
-
-  // 2. Buscar estado atual
+  // 1. Buscar estado atual + premium status
   const { data: child } = await supabase
     .from('children')
     .select('xp, level, zapcoins, hearts, hearts_last_updated, league_xp_this_week')
     .eq('id', childId)
     .single();
+
+  const premium = await isPremiumActive(childId, supabase);
+
+  // 2. XP e Zapcoins ganhos (premium: +20% XP, +2 zapcoins)
+  const xpMap: Record<number, number> = { 1: 100, 2: 70 };
+  const baseXP = isCorrect ? (xpMap[attemptNumber] ?? 50) : 0;
+  const xpEarned = premium ? Math.round(baseXP * 1.2) : baseXP;
+  const zapcoinsEarned = isCorrect ? (premium ? 7 : 5) : 0;
 
   // 3. Calcular corações com regeneração
   const currentHearts = calculateCurrentHearts(
@@ -480,5 +483,6 @@ export async function completeMission({
     isBlocked,
     streakResult,
     newBadges,
+    isPremium: premium,
   };
 }

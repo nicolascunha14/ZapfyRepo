@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { User } from "lucide-react";
 import { ProfileView } from "@/components/dashboard/profile-view";
+import { isPremiumActive } from "@/lib/gamification";
 
 export const metadata: Metadata = {
   title: "Perfil - Zapfy",
@@ -131,6 +132,9 @@ export default async function ProfilePage() {
     .eq("is_correct", true)
     .order("completed_at", { ascending: false });
 
+  // Check premium status
+  const premium = await isPremiumActive(child.id, supabase);
+
   // Map to legacy format for ProfileView
   const completedMissions = (completedAttempts ?? []).map((a) => ({
     id: a.id,
@@ -182,6 +186,7 @@ export default async function ProfilePage() {
         friends={friends}
         pendingRequests={pendingRequests}
         isGuest={isGuest}
+        isPremium={premium}
       />
     </div>
   );

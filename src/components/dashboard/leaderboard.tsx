@@ -55,11 +55,13 @@ function RankRow({
   child,
   position,
   isCurrentUser,
+  isPremium,
   index,
 }: {
   child: RankedChild;
   position: number;
   isCurrentUser: boolean;
+  isPremium: boolean;
   index: number;
 }) {
   const level = getLevel(child.total_points);
@@ -75,6 +77,8 @@ function RankRow({
         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
           isCurrentUser
             ? "bg-primary-500/10 border-2 border-primary-500/30"
+            : isPremium
+            ? "bg-amber-50/50 border-2 border-amber-200/60"
             : "bg-white border border-border/50"
         }`}
       >
@@ -94,6 +98,9 @@ function RankRow({
                 </span>
               )}
             </p>
+            {isPremium && (
+              <span className="text-[9px]">👑</span>
+            )}
           </div>
           <span className="text-xs text-muted-foreground">
             {level.name}
@@ -189,12 +196,15 @@ export function Leaderboard({
   friendsRanking,
   currentChildId,
   currentAgeGroup,
+  premiumChildIds = [],
 }: {
   rankingByAge: Record<string, RankedChild[]>;
   friendsRanking: RankedChild[];
   currentChildId: string | null;
   currentAgeGroup: string;
+  premiumChildIds?: string[];
 }) {
+  const premiumSet = new Set(premiumChildIds);
   const [mode, setMode] = useState<"global" | "friends">("global");
   const [activeTab, setActiveTab] = useState(currentAgeGroup);
   const [rankings, setRankings] = useState(rankingByAge);
@@ -340,6 +350,7 @@ export function Leaderboard({
                   child={child}
                   position={i + 1}
                   isCurrentUser={child.id === currentChildId}
+                  isPremium={premiumSet.has(child.id)}
                   index={i}
                 />
               ))}
@@ -361,6 +372,7 @@ export function Leaderboard({
                   child={globalCurrentUser}
                   position={globalUserPosition}
                   isCurrentUser={true}
+                  isPremium={currentChildId ? premiumSet.has(currentChildId) : false}
                   index={0}
                 />
               </div>
@@ -411,6 +423,7 @@ export function Leaderboard({
                       child={child}
                       position={i + 1}
                       isCurrentUser={child.id === currentChildId}
+                      isPremium={premiumSet.has(child.id)}
                       index={i}
                     />
                   ))}
@@ -432,6 +445,7 @@ export function Leaderboard({
                       child={friendsCurrentUser}
                       position={friendsUserPosition}
                       isCurrentUser={true}
+                      isPremium={currentChildId ? premiumSet.has(currentChildId) : false}
                       index={0}
                     />
                   </div>

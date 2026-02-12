@@ -97,6 +97,15 @@ export default async function RankingPage() {
     }
   }
 
+  // Fetch premium child IDs
+  const { data: premiumSubs } = await supabase
+    .from("premium_subscriptions")
+    .select("child_id")
+    .eq("is_active", true)
+    .gt("expires_at", new Date().toISOString());
+
+  const premiumChildIds = (premiumSubs ?? []).map((s) => s.child_id);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -130,6 +139,7 @@ export default async function RankingPage() {
         friendsRanking={friendsRanking}
         currentChildId={child?.id ?? null}
         currentAgeGroup={child?.age_group ?? "7-9"}
+        premiumChildIds={premiumChildIds}
       />
     </div>
   );

@@ -76,6 +76,7 @@ export function ProfileView({
   friends,
   pendingRequests,
   isGuest,
+  isPremium,
 }: {
   childId: string;
   initialName: string;
@@ -94,6 +95,7 @@ export function ProfileView({
   friends: { id: string; name: string; age_group: string; total_points: number }[];
   pendingRequests: { id: string; requester: { id: string; name: string; age_group: string; total_points: number } }[];
   isGuest?: boolean;
+  isPremium?: boolean;
 }) {
   const [name, setName] = useState(initialName);
   const [editingName, setEditingName] = useState(false);
@@ -157,9 +159,18 @@ export function ProfileView({
             <div className="flex items-start gap-4">
               {/* Avatar with customize button */}
               <div className="relative">
-                <div className="bg-gradient-to-br from-primary-500 to-zapfy-mint w-16 h-16 rounded-2xl flex items-center justify-center shrink-0">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${
+                  isPremium
+                    ? "bg-gradient-to-br from-amber-400 to-yellow-500 ring-2 ring-amber-300 shadow-lg shadow-amber-200/50"
+                    : "bg-gradient-to-br from-primary-500 to-zapfy-mint"
+                }`}>
                   <User size={28} className="text-white" />
                 </div>
+                {isPremium && (
+                  <div className="absolute -top-1.5 -left-1.5 bg-amber-400 rounded-full w-5 h-5 flex items-center justify-center shadow-sm border-2 border-white">
+                    <span className="text-[10px]">👑</span>
+                  </div>
+                )}
                 <button
                   className="absolute -bottom-1 -right-1 bg-white border border-border rounded-full w-6 h-6 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
                   title="Personalizar avatar"
@@ -207,6 +218,11 @@ export function ProfileView({
                     <h2 className="font-display font-bold text-xl truncate">
                       {name}
                     </h2>
+                    {isPremium && (
+                      <span className="shrink-0 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        PREMIUM
+                      </span>
+                    )}
                     <button
                       onClick={() => {
                         setNameInput(name);
