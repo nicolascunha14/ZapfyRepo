@@ -27,25 +27,28 @@ export default async function RankingPage() {
     .limit(1)
     .single();
 
-  // Fetch all children sorted by points, grouped by age
+  // Fetch all non-guest children sorted by points, grouped by age
   const [{ data: ranking79 }, { data: ranking1012 }, { data: ranking1315 }] =
     await Promise.all([
       supabase
         .from("children")
         .select("id, name, age_group, total_points")
         .eq("age_group", "7-9")
+        .neq("is_guest", true)
         .order("total_points", { ascending: false })
         .limit(50),
       supabase
         .from("children")
         .select("id, name, age_group, total_points")
         .eq("age_group", "10-12")
+        .neq("is_guest", true)
         .order("total_points", { ascending: false })
         .limit(50),
       supabase
         .from("children")
         .select("id, name, age_group, total_points")
         .eq("age_group", "13-15")
+        .neq("is_guest", true)
         .order("total_points", { ascending: false })
         .limit(50),
     ]);

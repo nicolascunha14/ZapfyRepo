@@ -3,15 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Crown, Sparkles, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
-import { MissionPath } from "@/components/dashboard/mission-path";
 import { DailyBonusCard } from "@/components/dashboard/daily-bonus-card";
 import { BadgeNotification } from "@/components/dashboard/badge-notification";
 import { GuestBanner } from "@/components/dashboard/guest-banner";
+import { AgeGroupTabs } from "@/components/dashboard/age-group-tabs";
 import { XPBar } from "@/components/gamification/XPBar";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { ZapcoinsDisplay } from "@/components/gamification/ZapcoinsDisplay";
 import { LeagueCard } from "@/components/gamification/LeagueCard";
-import type { ChapterWithProgress, Mission } from "@/lib/types";
+import type { AgeGroup, ChapterWithProgress, Mission } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Dashboard - Zapfy",
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   // Fetch child record with gamification fields
   const { data: child } = await supabase
     .from("children")
-    .select("id, name, age_group, total_points, xp, level, zapcoins, streak_current, streak_max, hearts, hearts_last_updated, league_xp_this_week")
+    .select("id, name, age_group, total_points, xp, level, zapcoins, streak_current, streak_max, hearts, hearts_last_updated, league_xp_this_week, completed_age_groups")
     .eq("parent_id", user!.id)
     .limit(1)
     .single();
@@ -156,6 +156,7 @@ export default async function DashboardPage() {
       .from("children")
       .select("id")
       .eq("age_group", child.age_group)
+      .neq("is_guest", true)
       .order("total_points", { ascending: false })
       .limit(50);
 
@@ -165,6 +166,24 @@ export default async function DashboardPage() {
       leaguePosition = idx >= 0 ? idx + 1 : rankingData.length;
     }
   }
+
+  // Check if all chapters are completed and exam status
+  const allChaptersCompleted = chapters.length > 0 && chapters.every((c) => c.status === "completed");
+  let examPassed = false;
+  if (child && allChaptersCompleted) {
+    const { data: passedExam } = await supabase
+      .from("exam_attempts")
+      .select("id")
+      .eq("child_id", child.id)
+      .eq("age_group", child.age_group)
+      .eq("passed", true)
+      .limit(1)
+      .single();
+
+    examPassed = !!passedExam;
+  }
+
+  const completedAgeGroups: string[] = (child?.completed_age_groups as string[]) ?? [];
 
   return (
     <div>
@@ -215,12 +234,16 @@ export default async function DashboardPage() {
             {/* Mission path - main content */}
             <div className="lg:w-[580px] lg:shrink-0">
               {chapters.length > 0 && (
-                <MissionPath
-                  chapters={chapters}
-                  activeChapterIndex={activeChapterIndex}
-                  missions={activeMissions}
-                  completedMissionIds={completedMissionIds}
+                <AgeGroupTabs
+                  currentAgeGroup={child.age_group as AgeGroup}
+                  completedAgeGroups={completedAgeGroups}
                   childId={child.id}
+                  initialChapters={chapters}
+                  initialActiveChapterIndex={activeChapterIndex}
+                  initialMissions={activeMissions}
+                  initialCompletedMissionIds={completedMissionIds}
+                  allChaptersCompleted={allChaptersCompleted}
+                  examPassed={examPassed}
                 />
               )}
             </div>

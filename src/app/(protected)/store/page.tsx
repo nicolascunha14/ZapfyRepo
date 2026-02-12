@@ -1,47 +1,68 @@
-import { ShoppingBag, Palette, Sparkles, Zap } from "lucide-react";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { ShopScreen } from "@/components/shop/shop-screen";
 
-export default function StorePage() {
+export const metadata: Metadata = {
+  title: "Loja - Zapfy",
+};
+
+export default async function StorePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: child } = await supabase
+    .from("children")
+    .select("id, zapcoins, active_theme")
+    .eq("parent_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!child) redirect("/onboarding");
+
+  // Fetch all active shop items
+  const { data: items } = await supabase
+    .from("shop_items")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  // Fetch child's purchases
+  const { data: purchases } = await supabase
+    .from("child_shop_purchases")
+    .select("item_id")
+    .eq("child_id", child.id);
+
+  // Fetch powerup inventory
+  const { data: inventory } = await supabase
+    .from("powerup_inventory")
+    .select("*")
+    .eq("child_id", child.id);
+
+  // Fetch premium subscription
+  const { data: premium } = await supabase
+    .from("premium_subscriptions")
+    .select("expires_at, is_active")
+    .eq("child_id", child.id)
+    .single();
+
+  const isPremium =
+    !!premium?.is_active && new Date(premium.expires_at) > new Date();
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="bg-primary-50 rounded-xl p-2.5">
-          <ShoppingBag size={24} className="text-primary-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-display font-bold">Loja</h1>
-          <p className="text-sm text-muted-foreground">
-            Use seus Zap Coins para desbloquear itens
-          </p>
-        </div>
-      </div>
-
-      {/* Coming soon */}
-      <div className="bg-white rounded-2xl border border-border/50 p-8 text-center space-y-4">
-        <div className="w-20 h-20 rounded-full bg-primary-50 flex items-center justify-center mx-auto">
-          <Sparkles size={36} className="text-primary-500" />
-        </div>
-        <h2 className="text-xl font-display font-bold">Em breve!</h2>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-          A loja do Zapfy está sendo preparada. Em breve você poderá usar seus
-          Zap Coins para desbloquear itens especiais!
-        </p>
-
-        {/* Preview items */}
-        <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto pt-4">
-          <div className="bg-muted/50 rounded-xl p-4 space-y-2 opacity-60">
-            <Palette size={24} className="text-violet-500 mx-auto" />
-            <p className="text-xs font-medium text-muted-foreground">Temas</p>
-          </div>
-          <div className="bg-muted/50 rounded-xl p-4 space-y-2 opacity-60">
-            <Sparkles size={24} className="text-amber-500 mx-auto" />
-            <p className="text-xs font-medium text-muted-foreground">Avatares</p>
-          </div>
-          <div className="bg-muted/50 rounded-xl p-4 space-y-2 opacity-60">
-            <Zap size={24} className="text-emerald-500 mx-auto" />
-            <p className="text-xs font-medium text-muted-foreground">Power-ups</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ShopScreen
+      childId={child.id}
+      initialZapcoins={child.zapcoins ?? 0}
+      items={items ?? []}
+      purchasedItemIds={(purchases ?? []).map((p) => p.item_id)}
+      powerUpInventory={inventory ?? []}
+      activeThemeSlug={child.active_theme ?? "default"}
+      isPremium={isPremium}
+      premiumExpiresAt={isPremium ? premium!.expires_at : null}
+    />
   );
 }

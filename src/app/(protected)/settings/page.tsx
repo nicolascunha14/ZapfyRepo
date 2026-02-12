@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Settings, Bell, Info, LogOut, Shield } from "lucide-react";
-import Link from "next/link";
+import { SettingsView } from "@/components/settings/settings-view";
+import type { AgeGroup } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Configuracoes - Zapfy",
+};
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -11,93 +16,38 @@ export default async function SettingsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const isGuest = user.is_anonymous === true || user.user_metadata?.is_guest === true;
 
-  const isAdmin = profile?.role === "admin";
+  const [{ data: child }, { data: profile }] = await Promise.all([
+    supabase
+      .from("children")
+      .select("id, name, age_group, total_points, xp, level, zapcoins, streak_current, streak_max")
+      .eq("parent_id", user.id)
+      .limit(1)
+      .single(),
+    supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single(),
+  ]);
+
+  if (!child && !isGuest) redirect("/onboarding");
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="bg-primary-50 rounded-xl p-2.5">
-          <Settings size={24} className="text-primary-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-display font-bold">Configurações</h1>
-          <p className="text-sm text-muted-foreground">
-            Gerencie suas preferências
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {/* Notifications */}
-        <div className="bg-white rounded-xl border border-border/50 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Bell size={20} className="text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Notificações</p>
-              <p className="text-xs text-muted-foreground">
-                Receba lembretes de missões
-              </p>
-            </div>
-          </div>
-          <span className="text-xs text-muted-foreground bg-muted rounded-full px-2.5 py-1">
-            Em breve
-          </span>
-        </div>
-
-        {/* About */}
-        <div className="bg-white rounded-xl border border-border/50 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Info size={20} className="text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Sobre o Zapfy</p>
-              <p className="text-xs text-muted-foreground">
-                Versão 1.0.0
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Admin */}
-        {isAdmin && (
-          <Link
-            href="/admin"
-            className="bg-white rounded-xl border border-border/50 p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors"
-          >
-            <Shield size={20} className="text-violet-500" />
-            <div>
-              <p className="text-sm font-medium text-violet-500">
-                Painel Admin
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Gerenciar plataforma
-              </p>
-            </div>
-          </Link>
-        )}
-
-        {/* Account info */}
-        <div className="bg-white rounded-xl border border-border/50 p-4">
-          <p className="text-xs text-muted-foreground mb-1">Conta</p>
-          <p className="text-sm font-medium">{user.email}</p>
-        </div>
-
-        {/* Sign out */}
-        <form action="/auth/signout" method="post">
-          <button
-            type="submit"
-            className="w-full bg-white rounded-xl border border-error/20 p-4 flex items-center gap-3 hover:bg-error/5 transition-colors cursor-pointer"
-          >
-            <LogOut size={20} className="text-error" />
-            <p className="text-sm font-medium text-error">Sair da conta</p>
-          </button>
-        </form>
-      </div>
-    </div>
+    <SettingsView
+      childId={child?.id ?? ""}
+      childName={child?.name ?? "Explorador"}
+      ageGroup={(child?.age_group as AgeGroup) ?? "7-9"}
+      xp={child?.xp ?? 0}
+      level={child?.level ?? 1}
+      zapcoins={child?.zapcoins ?? 0}
+      streakCurrent={child?.streak_current ?? 0}
+      streakMax={child?.streak_max ?? 0}
+      totalPoints={child?.total_points ?? 0}
+      userEmail={user.email ?? ""}
+      isGuest={isGuest}
+      isAdmin={profile?.role === "admin"}
+    />
   );
 }

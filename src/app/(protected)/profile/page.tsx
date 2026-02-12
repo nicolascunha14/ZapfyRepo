@@ -31,17 +31,25 @@ export default async function ProfilePage() {
     redirect("/onboarding");
   }
 
-  // Fetch referral data
-  const { data: userData } = await supabase
-    .from("users")
-    .select("referral_code")
-    .eq("id", user.id)
-    .single();
+  const isGuest = user.is_anonymous === true || user.user_metadata?.is_guest === true;
 
-  const { count: referralCount } = await supabase
-    .from("referrals")
-    .select("*", { count: "exact", head: true })
-    .eq("referrer_id", user.id);
+  // Fetch referral data (skip for guests)
+  let referralCode = "";
+  let referralCount = 0;
+  if (!isGuest) {
+    const { data: userData } = await supabase
+      .from("users")
+      .select("referral_code")
+      .eq("id", user.id)
+      .single();
+    referralCode = userData?.referral_code ?? "";
+
+    const { count } = await supabase
+      .from("referrals")
+      .select("*", { count: "exact", head: true })
+      .eq("referrer_id", user.id);
+    referralCount = count ?? 0;
+  }
 
   // Fetch current streak (latest daily login)
   const { data: latestLogin } = await supabase
@@ -52,47 +60,50 @@ export default async function ProfilePage() {
     .limit(1)
     .single();
 
-  // Fetch friendships
-  const { data: acceptedFriendships } = await supabase
-    .from("friendships")
-    .select("requester_id, addressee_id")
-    .eq("status", "accepted")
-    .or(`requester_id.eq.${child.id},addressee_id.eq.${child.id}`);
-
-  const friendIds = (acceptedFriendships ?? []).map((f) =>
-    f.requester_id === child.id ? f.addressee_id : f.requester_id
-  );
-
+  // Fetch friendships (skip for guests)
   let friends: { id: string; name: string; age_group: string; total_points: number }[] = [];
-  if (friendIds.length > 0) {
-    const { data: friendsData } = await supabase
-      .from("children")
-      .select("id, name, age_group, total_points")
-      .in("id", friendIds)
-      .order("total_points", { ascending: false });
-    friends = friendsData ?? [];
-  }
-
-  // Fetch pending friend requests (sent TO this child)
-  const { data: pendingRows } = await supabase
-    .from("friendships")
-    .select("id, requester_id")
-    .eq("addressee_id", child.id)
-    .eq("status", "pending");
-
   let pendingRequests: { id: string; requester: { id: string; name: string; age_group: string; total_points: number } }[] = [];
-  if (pendingRows && pendingRows.length > 0) {
-    const requesterIds = pendingRows.map((r) => r.requester_id);
-    const { data: requesters } = await supabase
-      .from("children")
-      .select("id, name, age_group, total_points")
-      .in("id", requesterIds);
 
-    if (requesters) {
-      pendingRequests = pendingRows.map((row) => ({
-        id: row.id,
-        requester: requesters.find((r) => r.id === row.requester_id)!,
-      })).filter((r) => r.requester);
+  if (!isGuest) {
+    const { data: acceptedFriendships } = await supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${child.id},addressee_id.eq.${child.id}`);
+
+    const friendIds = (acceptedFriendships ?? []).map((f) =>
+      f.requester_id === child.id ? f.addressee_id : f.requester_id
+    );
+
+    if (friendIds.length > 0) {
+      const { data: friendsData } = await supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .in("id", friendIds)
+        .order("total_points", { ascending: false });
+      friends = friendsData ?? [];
+    }
+
+    // Fetch pending friend requests (sent TO this child)
+    const { data: pendingRows } = await supabase
+      .from("friendships")
+      .select("id, requester_id")
+      .eq("addressee_id", child.id)
+      .eq("status", "pending");
+
+    if (pendingRows && pendingRows.length > 0) {
+      const requesterIds = pendingRows.map((r) => r.requester_id);
+      const { data: requesters } = await supabase
+        .from("children")
+        .select("id, name, age_group, total_points")
+        .in("id", requesterIds);
+
+      if (requesters) {
+        pendingRequests = pendingRows.map((row) => ({
+          id: row.id,
+          requester: requesters.find((r) => r.id === row.requester_id)!,
+        })).filter((r) => r.requester);
+      }
     }
   }
 
@@ -165,11 +176,12 @@ export default async function ProfilePage() {
         streakMax={child.streak_max ?? 0}
         completedMissions={(completedMissions as any) ?? []}
         totalMissions={totalMissions ?? 0}
-        referralCode={userData?.referral_code ?? ""}
-        referralCount={referralCount ?? 0}
+        referralCode={referralCode}
+        referralCount={referralCount}
         currentStreak={latestLogin?.streak_count ?? 0}
         friends={friends}
         pendingRequests={pendingRequests}
+        isGuest={isGuest}
       />
     </div>
   );

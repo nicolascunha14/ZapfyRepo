@@ -202,6 +202,185 @@ export async function checkAndAwardBadges(childId: string, supabase: any) {
 }
 
 // =============================================
+// SHOP & REWARDS
+// =============================================
+
+export async function purchaseShopItem(
+  childId: string,
+  itemId: string,
+  priceZapcoins: number,
+  supabase: any
+) {
+  // Check balance
+  const { data: child } = await supabase
+    .from('children')
+    .select('zapcoins')
+    .eq('id', childId)
+    .single();
+
+  if (!child || child.zapcoins < priceZapcoins) {
+    return { success: false, error: 'Zapcoins insuficientes' };
+  }
+
+  // Check if already purchased
+  const { data: existing } = await supabase
+    .from('child_shop_purchases')
+    .select('id')
+    .eq('child_id', childId)
+    .eq('item_id', itemId)
+    .single();
+
+  if (existing) {
+    return { success: false, error: 'Item já comprado' };
+  }
+
+  // Deduct zapcoins and record purchase
+  await supabase
+    .from('children')
+    .update({ zapcoins: child.zapcoins - priceZapcoins })
+    .eq('id', childId);
+
+  await supabase
+    .from('child_shop_purchases')
+    .insert({ child_id: childId, item_id: itemId });
+
+  return { success: true, newBalance: child.zapcoins - priceZapcoins };
+}
+
+export async function purchasePowerUp(
+  childId: string,
+  itemId: string,
+  priceZapcoins: number,
+  supabase: any
+) {
+  const { data: child } = await supabase
+    .from('children')
+    .select('zapcoins')
+    .eq('id', childId)
+    .single();
+
+  if (!child || child.zapcoins < priceZapcoins) {
+    return { success: false, error: 'Zapcoins insuficientes' };
+  }
+
+  // Deduct zapcoins
+  await supabase
+    .from('children')
+    .update({ zapcoins: child.zapcoins - priceZapcoins })
+    .eq('id', childId);
+
+  // Increment powerup inventory via RPC
+  const { data: newQty } = await supabase.rpc('increment_powerup', {
+    p_child_id: childId,
+    p_item_id: itemId,
+    p_amount: 1,
+  });
+
+  return { success: true, newBalance: child.zapcoins - priceZapcoins, quantity: newQty };
+}
+
+export async function usePowerUp(
+  childId: string,
+  itemId: string,
+  supabase: any
+) {
+  const { data: newQty, error } = await supabase.rpc('use_powerup', {
+    p_child_id: childId,
+    p_item_id: itemId,
+  });
+
+  if (error) {
+    return { success: false, error: 'Power-up não disponível' };
+  }
+
+  return { success: true, remainingQuantity: newQty };
+}
+
+export async function purchasePremiumWithCoins(
+  childId: string,
+  itemId: string,
+  priceZapcoins: number,
+  durationDays: number,
+  supabase: any
+) {
+  const { data: child } = await supabase
+    .from('children')
+    .select('zapcoins')
+    .eq('id', childId)
+    .single();
+
+  if (!child || child.zapcoins < priceZapcoins) {
+    return { success: false, error: 'Zapcoins insuficientes' };
+  }
+
+  // Check if already has active premium
+  const { data: existing } = await supabase
+    .from('premium_subscriptions')
+    .select('id, expires_at')
+    .eq('child_id', childId)
+    .single();
+
+  const now = new Date();
+  let expiresAt: Date;
+
+  if (existing && new Date(existing.expires_at) > now) {
+    // Extend existing
+    expiresAt = new Date(existing.expires_at);
+    expiresAt.setDate(expiresAt.getDate() + durationDays);
+
+    await supabase
+      .from('premium_subscriptions')
+      .update({ expires_at: expiresAt.toISOString(), is_active: true })
+      .eq('id', existing.id);
+  } else {
+    // New subscription
+    expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + durationDays);
+
+    if (existing) {
+      await supabase
+        .from('premium_subscriptions')
+        .update({ started_at: now.toISOString(), expires_at: expiresAt.toISOString(), is_active: true })
+        .eq('id', existing.id);
+    } else {
+      await supabase
+        .from('premium_subscriptions')
+        .insert({ child_id: childId, expires_at: expiresAt.toISOString() });
+    }
+  }
+
+  // Deduct zapcoins and record purchase
+  await supabase
+    .from('children')
+    .update({ zapcoins: child.zapcoins - priceZapcoins })
+    .eq('id', childId);
+
+  await supabase
+    .from('child_shop_purchases')
+    .upsert({ child_id: childId, item_id: itemId });
+
+  return { success: true, newBalance: child.zapcoins - priceZapcoins, expiresAt: expiresAt.toISOString() };
+}
+
+export async function isPremiumActive(childId: string, supabase: any): Promise<boolean> {
+  const { data } = await supabase
+    .from('premium_subscriptions')
+    .select('expires_at, is_active')
+    .eq('child_id', childId)
+    .single();
+
+  if (!data || !data.is_active) return false;
+  return new Date(data.expires_at) > new Date();
+}
+
+export async function setActiveTheme(childId: string, themeSlug: string, supabase: any) {
+  await supabase
+    .from('children')
+    .update({ active_theme: themeSlug })
+    .eq('id', childId);
+}
+
+// =============================================
 // COMPLETAR MISSÃO (função principal)
 // =============================================
 

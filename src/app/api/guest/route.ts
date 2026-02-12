@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       user_id: userId,
       name: "Explorador",
       age_group: selectedAgeGroup,
+      is_guest: true,
     });
 
     if (insertError) {

@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, CheckCircle2, Star, Crown, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Lock, CheckCircle2, Star, Crown, ChevronLeft, ChevronRight, Loader2, GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { ChapterWithProgress, Mission } from "@/lib/types";
+import type { ChapterWithProgress, Mission, AgeGroup } from "@/lib/types";
 
 const CHAPTER_COLORS = [
   { bg: "bg-emerald-500", light: "bg-emerald-100", ring: "ring-emerald-300", text: "text-emerald-700", gradient: "from-emerald-400 to-emerald-600" },
@@ -25,6 +25,9 @@ type Props = {
   missions: Mission[];
   completedMissionIds: string[];
   childId: string;
+  allChaptersCompleted?: boolean;
+  examPassed?: boolean;
+  ageGroup?: AgeGroup;
 };
 
 export function MissionPath({
@@ -33,6 +36,9 @@ export function MissionPath({
   missions: initialMissions,
   completedMissionIds: initialCompletedIds,
   childId,
+  allChaptersCompleted,
+  examPassed,
+  ageGroup,
 }: Props) {
   const [currentIndex, setCurrentIndex] = useState(activeChapterIndex);
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
@@ -238,6 +244,60 @@ export function MissionPath({
                 <p className="text-xs font-bold text-amber-600 mt-2">
                   Capítulo Completo!
                 </p>
+              </div>
+            )}
+
+            {/* Final Exam node - show after last chapter when all completed */}
+            {allChaptersCompleted && currentIndex === chapters.length - 1 && chapter.status === "completed" && (
+              <div className="flex flex-col items-center mt-4">
+                <div className="w-0.5 h-8 bg-gradient-to-b from-amber-300 to-violet-400" />
+                {examPassed ? (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg ring-4 ring-emerald-200">
+                      <CheckCircle2 size={28} className="text-white" />
+                    </div>
+                    <p className="text-xs font-bold text-emerald-600 mt-2">
+                      Prova Aprovada!
+                    </p>
+                  </>
+                ) : ageGroup === "13-15" ? (
+                  <>
+                    <motion.div
+                      className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center shadow-lg ring-4 ring-violet-200"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", delay: 0.7 }}
+                    >
+                      <GraduationCap size={28} className="text-white" />
+                    </motion.div>
+                    <p className="text-xs font-bold text-violet-600 mt-2">
+                      Mestre Financeiro!
+                    </p>
+                  </>
+                ) : (
+                  <Link href="/dashboard/final-exam">
+                    <div className="flex flex-col items-center">
+                      <motion.div
+                        className="relative w-18 h-18 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center ring-4 ring-violet-300 shadow-lg cursor-pointer"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <GraduationCap size={30} className="text-white" />
+                        <div className="absolute inset-0 rounded-full bg-violet-500 opacity-30 animate-ping" />
+                      </motion.div>
+                      <motion.p
+                        className="mt-2 text-xs font-bold text-violet-700 bg-white rounded-full px-3 py-1 shadow-sm border border-violet-200"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                      >
+                        PROVA FINAL
+                      </motion.p>
+                    </div>
+                  </Link>
+                )}
               </div>
             )}
           </motion.div>
