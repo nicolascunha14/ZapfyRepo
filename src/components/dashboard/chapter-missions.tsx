@@ -11,7 +11,6 @@ import type { Chapter, Mission } from "@/lib/types";
 const missionTypeLabels: Record<string, string> = {
   quiz: "Quiz",
   true_false: "V ou F",
-  drag_drop: "Arrastar",
   numeric_input: "Cálculo",
   text_input: "Texto",
   matching: "Conectar",
@@ -20,7 +19,6 @@ const missionTypeLabels: Record<string, string> = {
 const missionTypeColors: Record<string, string> = {
   quiz: "bg-primary-100 text-primary-700",
   true_false: "bg-emerald-100 text-emerald-700",
-  drag_drop: "bg-amber-100 text-amber-700",
   numeric_input: "bg-violet-100 text-violet-700",
   text_input: "bg-rose-100 text-rose-700",
   matching: "bg-teal-100 text-teal-700",

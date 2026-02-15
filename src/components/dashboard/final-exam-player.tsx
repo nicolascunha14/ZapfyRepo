@@ -27,7 +27,6 @@ import { QuizMission } from "@/components/dashboard/mission-types/quiz-mission";
 import { TrueFalseMission } from "@/components/dashboard/mission-types/true-false-mission";
 import { NumericInputMission } from "@/components/dashboard/mission-types/numeric-input-mission";
 import { TextInputMission } from "@/components/dashboard/mission-types/text-input-mission";
-import { DragDropMission } from "@/components/dashboard/mission-types/drag-drop-mission";
 import { MatchingMission } from "@/components/dashboard/mission-types/matching-mission";
 
 const PASS_THRESHOLD = 7; // 7/10 to pass
@@ -368,8 +367,6 @@ function ExamQuestionRenderer({
       return <NumericInputMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
     case "text_input":
       return <TextInputMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
-    case "drag_drop":
-      return <DragDropMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
     case "matching":
       return <MatchingMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
     default:
