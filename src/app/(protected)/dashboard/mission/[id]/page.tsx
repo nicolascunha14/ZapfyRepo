@@ -126,12 +126,48 @@ export default async function MissionPage({
     : 1;
   const totalMissions = chapterMissions?.length ?? 10;
 
+  // Find next chapter (if this is the last mission of the chapter)
+  let nextChapterId: string | null = null;
+  if (!nextMissionId) {
+    const { data: currentChapter } = await supabase
+      .from("chapters")
+      .select("age_group, order_position")
+      .eq("id", chapterId)
+      .single();
+
+    if (currentChapter) {
+      const { data: nextChapter } = await supabase
+        .from("chapters")
+        .select("id")
+        .eq("age_group", currentChapter.age_group)
+        .gt("order_position", currentChapter.order_position)
+        .order("order_position", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (nextChapter) {
+        // Check if user has progress (unlocked) for the next chapter
+        const { data: nextProgress } = await supabase
+          .from("user_progress")
+          .select("status")
+          .eq("child_id", child.id)
+          .eq("chapter_id", nextChapter.id)
+          .single();
+
+        if (nextProgress && nextProgress.status !== "locked") {
+          nextChapterId = nextChapter.id;
+        }
+      }
+    }
+  }
+
   return (
     <NewMissionPlayer
       mission={mission}
       childId={child.id}
       chapterId={chapterId}
       nextMissionId={nextMissionId}
+      nextChapterId={nextChapterId}
       currentMissionNumber={currentMissionNumber}
       totalMissions={totalMissions}
       completedMissions={progress.missions_completed ?? 0}

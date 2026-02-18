@@ -39,6 +39,7 @@ export function NewMissionPlayer({
   childId,
   chapterId,
   nextMissionId,
+  nextChapterId,
   currentMissionNumber,
   totalMissions,
   completedMissions,
@@ -53,6 +54,7 @@ export function NewMissionPlayer({
   childId: string;
   chapterId: string;
   nextMissionId: string | null;
+  nextChapterId?: string | null;
   currentMissionNumber: number;
   totalMissions: number;
   completedMissions: number;
@@ -160,8 +162,12 @@ export function NewMissionPlayer({
     if (resultData?.isCorrect && nextMissionId) {
       router.push(`/dashboard/mission/${nextMissionId}?chapter=${chapterId}`);
       router.refresh();
+    } else if (resultData?.isCorrect && nextChapterId) {
+      // Last mission of chapter — go directly to next chapter
+      router.push(`/dashboard/chapter/${nextChapterId}`);
+      router.refresh();
     } else if (resultData?.isCorrect) {
-      router.push(`/dashboard/chapter/${chapterId}`);
+      router.push(`/dashboard`);
       router.refresh();
     } else {
       // Wrong answer — check if blocked
