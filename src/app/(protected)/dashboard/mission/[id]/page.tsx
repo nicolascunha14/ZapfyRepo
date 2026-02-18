@@ -39,6 +39,26 @@ export default async function MissionPage({
 
   const chapterId = chapterIdParam || mission.chapter_id;
 
+  // Skip unsupported mission types (e.g. drag_drop) — find next valid mission
+  const SUPPORTED_TYPES = ["quiz", "true_false", "numeric_input", "text_input", "matching"];
+
+  if (!SUPPORTED_TYPES.includes(mission.mission_type)) {
+    const { data: allMissions } = await supabase
+      .from("missions")
+      .select("id, mission_type")
+      .eq("chapter_id", chapterId)
+      .order("order_position", { ascending: true });
+
+    if (allMissions) {
+      const currentIdx = allMissions.findIndex((m) => m.id === id);
+      const nextValid = allMissions.slice(currentIdx + 1).find((m) => SUPPORTED_TYPES.includes(m.mission_type));
+      if (nextValid) {
+        redirect(`/dashboard/mission/${nextValid.id}?chapter=${chapterId}`);
+      }
+    }
+    redirect(`/dashboard/chapter/${chapterId}`);
+  }
+
   // Check if already completed
   const { data: existingAttempt } = await supabase
     .from("mission_attempts")
@@ -52,10 +72,10 @@ export default async function MissionPage({
     redirect(`/dashboard/chapter/${chapterId}`);
   }
 
-  // Check sequential order within chapter
+  // Check sequential order within chapter (exclude unsupported types)
   const { data: chapterMissions } = await supabase
     .from("missions")
-    .select("id")
+    .select("id, mission_type")
     .eq("chapter_id", chapterId)
     .order("order_position", { ascending: true });
 
@@ -90,12 +110,13 @@ export default async function MissionPage({
     redirect("/dashboard");
   }
 
-  // Find next mission id
+  // Find next valid mission id (skip unsupported types like drag_drop)
   let nextMissionId: string | null = null;
   if (chapterMissions) {
     const currentIndex = chapterMissions.findIndex((m) => m.id === id);
-    if (currentIndex >= 0 && currentIndex < chapterMissions.length - 1) {
-      nextMissionId = chapterMissions[currentIndex + 1].id;
+    if (currentIndex >= 0) {
+      const nextValid = chapterMissions.slice(currentIndex + 1).find((m) => SUPPORTED_TYPES.includes(m.mission_type));
+      nextMissionId = nextValid?.id ?? null;
     }
   }
 

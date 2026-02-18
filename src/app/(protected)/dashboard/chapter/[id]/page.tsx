@@ -46,15 +46,19 @@ export default async function ChapterPage({
     redirect("/dashboard");
   }
 
-  // Fetch missions for this chapter
-  const { data: missions } = await supabase
+  // Fetch missions for this chapter (exclude unsupported types like drag_drop)
+  const { data: allMissions } = await supabase
     .from("missions")
     .select("*")
     .eq("chapter_id", id)
     .order("order_position", { ascending: true });
 
+  const missions = (allMissions ?? []).filter((m) =>
+    ["quiz", "true_false", "numeric_input", "text_input", "matching"].includes(m.mission_type)
+  );
+
   // Fetch completed mission attempts for this child in this chapter
-  const missionIds = (missions ?? []).map((m) => m.id);
+  const missionIds = missions.map((m) => m.id);
   let completedMissionIds: string[] = [];
 
   if (missionIds.length > 0) {
@@ -71,7 +75,7 @@ export default async function ChapterPage({
   return (
     <ChapterMissions
       chapter={chapter}
-      missions={missions ?? []}
+      missions={missions}
       completedMissionIds={completedMissionIds}
       childId={child.id}
       missionsCompleted={progress.missions_completed}
