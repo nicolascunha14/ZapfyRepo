@@ -457,13 +457,99 @@ export async function completeMission({
     league_xp_this_week: (child.league_xp_this_week ?? 0) + xpEarned,
   }).eq('id', childId);
 
-  // 7. Streak (só se acertou)
+  // 7. Atualizar user_progress (incrementar missions_completed → dispara unlock_next_chapter)
+  if (isCorrect) {
+    // Buscar chapter_id da missão
+    const { data: missionData } = await supabase
+      .from('missions')
+      .select('chapter_id')
+      .eq('id', missionId)
+      .single();
+
+    if (missionData) {
+      const chId = missionData.chapter_id;
+
+      // Verificar se é a primeira vez completando esta missão (evitar duplo incremento)
+      const { data: prevCorrect } = await supabase
+        .from('mission_attempts')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('mission_id', missionId)
+        .eq('is_correct', true)
+        .limit(2);
+
+      // Se só existe 1 tentativa correta (a que acabamos de inserir), incrementar
+      if (prevCorrect && prevCorrect.length <= 1) {
+        const { data: currentProgress } = await supabase
+          .from('user_progress')
+          .select('missions_completed, total_score, status')
+          .eq('child_id', childId)
+          .eq('chapter_id', chId)
+          .single();
+
+        if (currentProgress) {
+          const newCompleted = (currentProgress.missions_completed ?? 0) + 1;
+
+          // Contar total de missões válidas neste capítulo
+          const { count: totalChapterMissions } = await supabase
+            .from('missions')
+            .select('*', { count: 'exact', head: true })
+            .eq('chapter_id', chId)
+            .in('mission_type', ['quiz', 'true_false', 'numeric_input', 'text_input', 'matching']);
+
+          const isChapterComplete = newCompleted >= (totalChapterMissions ?? 10);
+
+          await supabase
+            .from('user_progress')
+            .update({
+              missions_completed: newCompleted,
+              total_score: (currentProgress.total_score ?? 0) + xpEarned,
+              status: isChapterComplete ? 'completed' : (currentProgress.status === 'unlocked' ? 'in_progress' : currentProgress.status),
+              ...(isChapterComplete ? { completed_at: new Date().toISOString() } : {}),
+              ...(currentProgress.status === 'unlocked' ? { started_at: new Date().toISOString() } : {}),
+            })
+            .eq('child_id', childId)
+            .eq('chapter_id', chId);
+
+          // Se capítulo completou, desbloquear o próximo
+          if (isChapterComplete) {
+            const { data: currentChapter } = await supabase
+              .from('chapters')
+              .select('age_group, chapter_number')
+              .eq('id', chId)
+              .single();
+
+            if (currentChapter) {
+              // Buscar o próximo capítulo
+              const { data: nextChapter } = await supabase
+                .from('chapters')
+                .select('id')
+                .eq('age_group', currentChapter.age_group)
+                .eq('chapter_number', currentChapter.chapter_number + 1)
+                .single();
+
+              if (nextChapter) {
+                await supabase
+                  .from('user_progress')
+                  .update({ status: 'unlocked' })
+                  .eq('child_id', childId)
+                  .eq('chapter_id', nextChapter.id)
+                  .eq('status', 'locked');
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 8. Streak (só se acertou)
   let streakResult = null;
   if (isCorrect) {
     streakResult = await updateStreak(childId, supabase);
   }
 
-  // 8. Verificar badges
+  // 9. Verificar badges
   const newBadges = await checkAndAwardBadges(childId, supabase);
 
   // Badge de velocidade
