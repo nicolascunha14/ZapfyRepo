@@ -18,6 +18,7 @@ export type ChapterWithProgress = Chapter & {
   status: ChapterStatus;
   missions_completed: number;
   total_score: number;
+  total_missions?: number;
 };
 
 export type Mission = {

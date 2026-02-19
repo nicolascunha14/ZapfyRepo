@@ -65,6 +65,20 @@ export default async function DashboardPage() {
         (progressData ?? []).map((p) => [p.chapter_id, p])
       );
 
+      // Count valid missions per chapter (excluding unsupported types like drag_drop)
+      const supportedTypes = ["quiz", "true_false", "numeric_input", "text_input", "matching"];
+      const chapterIds = chaptersData.map((ch) => ch.id);
+      const { data: missionCounts } = await supabase
+        .from("missions")
+        .select("chapter_id")
+        .in("chapter_id", chapterIds)
+        .in("mission_type", supportedTypes);
+
+      const missionCountMap = new Map<string, number>();
+      for (const m of missionCounts ?? []) {
+        missionCountMap.set(m.chapter_id, (missionCountMap.get(m.chapter_id) ?? 0) + 1);
+      }
+
       chapters = chaptersData.map((ch) => {
         const prog = progressMap.get(ch.id);
         return {
@@ -72,6 +86,7 @@ export default async function DashboardPage() {
           status: (prog?.status as ChapterWithProgress["status"]) ?? "locked",
           missions_completed: prog?.missions_completed ?? 0,
           total_score: prog?.total_score ?? 0,
+          total_missions: missionCountMap.get(ch.id) ?? 0,
         };
       });
 
@@ -116,7 +131,9 @@ export default async function DashboardPage() {
         .eq("chapter_id", activeChapter.id)
         .order("order_position", { ascending: true });
 
-      activeMissions = missionsData ?? [];
+      activeMissions = (missionsData ?? []).filter((m) =>
+        ["quiz", "true_false", "numeric_input", "text_input", "matching"].includes(m.mission_type)
+      );
 
       // Fetch completed mission IDs
       const missionIds = activeMissions.map((m) => m.id);
@@ -146,7 +163,7 @@ export default async function DashboardPage() {
 
   const claimedToday = !!todayLogin;
   const currentStreak = todayLogin?.streak_count ?? 0;
-  const totalMissions = chapters.length * 10;
+  const totalMissions = chapters.reduce((sum, c) => sum + (c.total_missions ?? 0), 0);
 
   // League data - calculate position from ranking
   let leaguePosition = 1;

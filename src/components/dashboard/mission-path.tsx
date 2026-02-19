@@ -7,6 +7,8 @@ import { Lock, CheckCircle2, Star, Crown, ChevronLeft, ChevronRight, Loader2, Gr
 import { createClient } from "@/lib/supabase/client";
 import type { ChapterWithProgress, Mission, AgeGroup } from "@/lib/types";
 
+const SUPPORTED_MISSION_TYPES = ["quiz", "true_false", "numeric_input", "text_input", "matching"];
+
 const CHAPTER_COLORS = [
   { bg: "bg-emerald-500", light: "bg-emerald-100", ring: "ring-emerald-300", text: "text-emerald-700", gradient: "from-emerald-400 to-emerald-600" },
   { bg: "bg-blue-500", light: "bg-blue-100", ring: "ring-blue-300", text: "text-blue-700", gradient: "from-blue-400 to-blue-600" },
@@ -70,7 +72,9 @@ export function MissionPath({
       .eq("chapter_id", ch.id)
       .order("order_position", { ascending: true });
 
-    const missionsList = (missionsData ?? []) as Mission[];
+    const missionsList = ((missionsData ?? []) as Mission[]).filter((m) =>
+      SUPPORTED_MISSION_TYPES.includes(m.mission_type)
+    );
     setMissions(missionsList);
 
     // Fetch completed missions
@@ -142,19 +146,24 @@ export function MissionPath({
         </div>
 
         {/* Progress bar */}
-        <div className="relative mt-3 flex items-center gap-2">
-          <div className="flex-1 h-2.5 bg-white/25 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-white rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${(chapter.missions_completed / 10) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-          <span className="text-xs font-bold text-white/90 tabular-nums">
-            {chapter.missions_completed}/10
-          </span>
-        </div>
+        {(() => {
+          const total = missions.length > 0 ? missions.length : (chapter.total_missions ?? 0);
+          return (
+            <div className="relative mt-3 flex items-center gap-2">
+              <div className="flex-1 h-2.5 bg-white/25 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-white rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${total > 0 ? (chapter.missions_completed / total) * 100 : 0}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+              <span className="text-xs font-bold text-white/90 tabular-nums">
+                {chapter.missions_completed}/{total}
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Mission nodes */}

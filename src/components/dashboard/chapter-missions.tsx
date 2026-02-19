@@ -39,7 +39,8 @@ export function ChapterMissions({
 }) {
   const router = useRouter();
   const [completedIds] = useState<Set<string>>(new Set(completedMissionIds));
-  const progress = (missionsCompleted / 10) * 100;
+  const totalMissions = missions.length;
+  const progress = totalMissions > 0 ? (missionsCompleted / totalMissions) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -69,7 +70,7 @@ export function ChapterMissions({
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">Progresso</span>
           <span className="text-sm font-bold text-primary-500">
-            {missionsCompleted}/10 missões
+            {missionsCompleted}/{totalMissions} missões
           </span>
         </div>
         <Progress value={progress} className="h-2.5" />

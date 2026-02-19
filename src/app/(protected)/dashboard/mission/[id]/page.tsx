@@ -72,14 +72,19 @@ export default async function MissionPage({
     redirect(`/dashboard/chapter/${chapterId}`);
   }
 
-  // Check sequential order within chapter (exclude unsupported types)
-  const { data: chapterMissions } = await supabase
+  // Fetch all missions, then filter to supported types only
+  const { data: allChapterMissions } = await supabase
     .from("missions")
     .select("id, mission_type")
     .eq("chapter_id", chapterId)
     .order("order_position", { ascending: true });
 
-  if (chapterMissions && chapterMissions.length > 1) {
+  const chapterMissions = (allChapterMissions ?? []).filter((m) =>
+    SUPPORTED_TYPES.includes(m.mission_type)
+  );
+
+  // Check sequential order (only among supported missions)
+  if (chapterMissions.length > 1) {
     const currentIndex = chapterMissions.findIndex((m) => m.id === id);
 
     if (currentIndex > 0) {
@@ -110,21 +115,16 @@ export default async function MissionPage({
     redirect("/dashboard");
   }
 
-  // Find next valid mission id (skip unsupported types like drag_drop)
+  // Find next valid mission id
   let nextMissionId: string | null = null;
-  if (chapterMissions) {
-    const currentIndex = chapterMissions.findIndex((m) => m.id === id);
-    if (currentIndex >= 0) {
-      const nextValid = chapterMissions.slice(currentIndex + 1).find((m) => SUPPORTED_TYPES.includes(m.mission_type));
-      nextMissionId = nextValid?.id ?? null;
-    }
+  const currentIndex = chapterMissions.findIndex((m) => m.id === id);
+  if (currentIndex >= 0 && currentIndex < chapterMissions.length - 1) {
+    nextMissionId = chapterMissions[currentIndex + 1].id;
   }
 
-  // Current mission number for progress display
-  const currentMissionNumber = chapterMissions
-    ? chapterMissions.findIndex((m) => m.id === id) + 1
-    : 1;
-  const totalMissions = chapterMissions?.length ?? 10;
+  // Progress display (based on supported missions only)
+  const currentMissionNumber = currentIndex >= 0 ? currentIndex + 1 : 1;
+  const totalMissions = chapterMissions.length;
 
   // Find next chapter (if this is the last mission of the chapter)
   // Don't check lock status — the unlock_next_chapter trigger fires

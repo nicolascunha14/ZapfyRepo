@@ -157,11 +157,11 @@ function ChapterCard({
               <div className="flex-1 h-2 bg-white/25 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-white rounded-full transition-all"
-                  style={{ width: `${(progress / 10) * 100}%` }}
+                  style={{ width: `${(chapter.total_missions ?? 10) > 0 ? (progress / (chapter.total_missions ?? 10)) * 100 : 0}%` }}
                 />
               </div>
               <span className="text-xs font-bold text-white/80 tabular-nums">
-                {progress}/10
+                {progress}/{chapter.total_missions ?? 10}
               </span>
             </div>
 
