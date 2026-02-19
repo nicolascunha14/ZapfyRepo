@@ -38,7 +38,7 @@ export function StickyCtaMobile() {
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
-            Garantir Acesso — R$ 19,90
+            Garantir vaga na Turma Fundadora
             <ArrowRight className="w-4 h-4" />
           </span>
         )}

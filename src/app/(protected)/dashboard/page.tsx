@@ -321,7 +321,7 @@ export default async function DashboardPage() {
                           Zapfy Premium
                         </p>
                         <p className="text-[11px] text-amber-600/70 flex items-center gap-1 mt-0.5">
-                          Em breve disponivel!
+                          Em breve disponível!
                         </p>
                       </div>
                       <span className="text-[10px] bg-amber-200 text-amber-700 font-bold px-2 py-0.5 rounded-full shrink-0">

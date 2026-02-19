@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
       { error: "Stripe não configurado. Adicione STRIPE_SECRET_KEY ao .env.local" },
@@ -23,6 +23,17 @@ export async function POST() {
     );
   }
 
+  // Read optional email from request body
+  let customerEmail: string | undefined;
+  try {
+    const body = await req.json();
+    if (body?.email && typeof body.email === "string" && body.email.includes("@")) {
+      customerEmail = body.email;
+    }
+  } catch {
+    // body is optional
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [
@@ -37,6 +48,7 @@ export async function POST() {
     payment_method_types: ["card"],
     allow_promotion_codes: true,
     billing_address_collection: "auto",
+    ...(customerEmail ? { customer_email: customerEmail } : {}),
   });
 
   return NextResponse.json({ url: session.url });

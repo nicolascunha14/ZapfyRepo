@@ -76,7 +76,7 @@ export default async function FinalExamPage() {
         </h1>
         <p className="text-muted-foreground">
           Você já passou na prova final do nível {AGE_GROUP_LABELS[ageGroup]}{" "}
-          com {passedExam.questions_correct}/10 acertos.
+          com {passedExam.questions_correct} acertos.
           {nextGroup && (
             <>
               {" "}

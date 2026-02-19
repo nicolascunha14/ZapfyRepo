@@ -20,7 +20,7 @@ export default function ObrigadoPage() {
           href="/"
           className="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors"
         >
-          Voltar ao inicio
+          Voltar ao início
         </Link>
       </nav>
 
@@ -41,8 +41,8 @@ export default function ObrigadoPage() {
           Obrigado pelo interesse!
         </h1>
         <p className="text-muted-foreground text-center max-w-md leading-relaxed mb-10">
-          Recebemos suas informacoes com sucesso. Em breve nossa equipe
-          entrara em contato com voce para os proximos passos.
+          Recebemos suas informações com sucesso. Em breve nossa equipe
+          entrará em contato com você para os próximos passos.
         </p>
 
         {/* What happens next */}
@@ -58,10 +58,10 @@ export default function ObrigadoPage() {
               </div>
               <div>
                 <p className="font-display font-bold text-sm text-foreground">
-                  Analise do seu perfil
+                  Análise do seu perfil
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Nossa equipe vai analisar suas informacoes para personalizar a melhor experiencia.
+                  Nossa equipe vai analisar suas informações para personalizar a melhor experiência.
                 </p>
               </div>
             </div>
@@ -75,7 +75,7 @@ export default function ObrigadoPage() {
                   Contato da equipe
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Entraremos em contato por e-mail em ate 24 horas com todas as informacoes.
+                  Entraremos em contato por e-mail em até 24 horas com todas as informações.
                 </p>
               </div>
             </div>
@@ -86,10 +86,10 @@ export default function ObrigadoPage() {
               </div>
               <div>
                 <p className="font-display font-bold text-sm text-foreground">
-                  Acesso a plataforma
+                  Acesso à plataforma
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Voce recebera acesso para comecar a aventura da educacao financeira!
+                  Você receberá acesso para começar a aventura da educação financeira!
                 </p>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function ObrigadoPage() {
                 <BookOpen size={20} className="text-primary-500" />
               </div>
               <p className="text-[11px] font-medium text-muted-foreground leading-tight">
-                Missoes educativas gamificadas
+                Missões educativas gamificadas
               </p>
             </div>
             <div className="flex flex-col items-center text-center gap-2">

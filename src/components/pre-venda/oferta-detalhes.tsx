@@ -1,113 +1,92 @@
 "use client";
 
-import { CheckCircle, BookOpen, Trophy, Users, Zap, Star, Lock } from "lucide-react";
-import { ScrollAnimation, StaggerContainer, StaggerItem } from "@/components/ui/scroll-animation";
-
-const includes = [
-  {
-    icon: BookOpen,
-    color: "text-primary-500",
-    bg: "bg-primary-100",
-    title: "27+ capítulos de conteúdo",
-    description: "Missões educativas para 3 faixas etárias: 7-9, 10-12 e 13-15 anos",
-  },
-  {
-    icon: Trophy,
-    color: "text-amber-500",
-    bg: "bg-amber-100",
-    title: "Sistema completo de gamificação",
-    description: "XP, Zapcoins, badges, ranking e recompensas que mantêm as crianças engajadas",
-  },
-  {
-    icon: Users,
-    color: "text-emerald-500",
-    bg: "bg-emerald-100",
-    title: "Painel para pais",
-    description: "Acompanhe o progresso, conquistas e evolução do seu filho em tempo real",
-  },
-  {
-    icon: Zap,
-    color: "text-violet-500",
-    bg: "bg-violet-100",
-    title: "Missões práticas em família",
-    description: "O Módulo Fundador: 10 missões para praticar finanças no mundo real juntos",
-  },
-  {
-    icon: Star,
-    color: "text-rose-500",
-    bg: "bg-rose-100",
-    title: "Atualizações vitalícias",
-    description: "Novos capítulos, missões e funcionalidades incluídos sem custo adicional",
-  },
-  {
-    icon: Lock,
-    color: "text-slate-500",
-    bg: "bg-slate-100",
-    title: "Acesso para múltiplos filhos",
-    description: "Cadastre todos os seus filhos em uma única conta familiar",
-  },
-];
+import { motion } from "framer-motion";
+import { ScrollAnimation } from "@/components/ui/scroll-animation";
 
 export function OfertaDetalhes() {
   return (
-    <section className="section-padding bg-white">
-      <div className="container-zapfy">
+    <section className="section-padding bg-slate-50">
+      <div className="container-zapfy max-w-4xl mx-auto">
         <ScrollAnimation animation="fadeUp">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="inline-block bg-primary-100 text-primary-600 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
-              O que está incluso
+          <div className="text-center mb-10">
+            <span className="inline-block bg-primary-100 text-primary-700 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
+              Preview exclusivo
             </span>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Tudo que você precisa para educar seu filho financeiramente
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
+              Veja a Zapfy{" "}
+              <span className="text-primary-600">em ação</span>
             </h2>
-            <p className="text-muted-foreground text-lg">
-              Uma plataforma completa, desenvolvida por especialistas em educação financeira e gamificação infantil.
+            <p className="text-slate-500 text-lg max-w-xl mx-auto">
+              Missões práticas, sistema de níveis e recompensas — tudo dentro de
+              um app pensado para crianças de 6 a 9 anos.
             </p>
           </div>
         </ScrollAnimation>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {includes.map((item) => (
-            <StaggerItem key={item.title}>
-              <div className="flex gap-4 p-6 rounded-2xl border border-border/60 hover:border-primary-200 hover:shadow-md transition-all bg-white group">
-                <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
-                  <item.icon className={`w-6 h-6 ${item.color}`} />
+        {/* App mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="flex justify-center"
+        >
+          <div className="relative w-64 md:w-72">
+            {/* Phone frame */}
+            <div className="bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl">
+              <div className="bg-white rounded-[2rem] overflow-hidden">
+                {/* Status bar */}
+                <div className="bg-primary-600 px-5 pt-3 pb-6 text-white">
+                  <div className="flex items-center justify-between text-xs mb-3 opacity-70">
+                    <span>9:41</span>
+                    <span>●●●</span>
+                  </div>
+                  <p className="text-xs font-semibold opacity-80 mb-1">Olá, Lucas! 👋</p>
+                  <p className="text-xl font-display font-bold">Missão do dia</p>
                 </div>
-                <div>
-                  <h3 className="font-display font-bold text-foreground mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+
+                {/* App content */}
+                <div className="px-4 py-4 space-y-3">
+                  {/* XP bar */}
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                      <span>Nível 3 — Poupador</span>
+                      <span>240 XP</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full">
+                      <div className="h-2 bg-primary-500 rounded-full w-3/5" />
+                    </div>
+                  </div>
+
+                  {/* Mission card */}
+                  <div className="bg-primary-50 border border-primary-100 rounded-2xl p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">⚡</span>
+                      <span className="text-xs font-bold text-primary-700 uppercase tracking-wide">Missão em família</span>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800 leading-snug">
+                      Regra dos 3 Potes
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Junto com seus pais, divida R$10 nos potes: gastar, poupar e doar.</p>
+                    <div className="mt-2 flex items-center gap-1">
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">+150 XP</span>
+                      <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">+10 🪙</span>
+                    </div>
+                  </div>
+
+                  {/* Badges row */}
+                  <div className="flex gap-2">
+                    {["🏅", "⭐", "🎯"].map((emoji) => (
+                      <div key={emoji} className="flex-1 bg-slate-50 border border-slate-100 rounded-xl p-2 text-center text-xl">
+                        {emoji}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
-
-        {/* Bonus card */}
-        <ScrollAnimation animation="fadeUp" delay={0.3}>
-          <div className="mt-10 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6 md:p-8 text-center">
-            <div className="text-3xl mb-3">🎁</div>
-            <h3 className="font-display font-bold text-xl text-foreground mb-2">
-              Bônus Exclusivo para Fundadores
-            </h3>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Os primeiros compradores da pré-venda recebem acesso ao <strong>Módulo Fundador — Jornada Prática em Família</strong>,
-              com 10 missões em família para praticar educação financeira no mundo real.
-            </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-3">
-              {[
-                "De Onde Vem o Dinheiro?",
-                "Regra dos 3 Potes",
-                "Meu Primeiro Objetivo",
-                "+7 missões exclusivas",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-1.5 bg-white border border-amber-200 px-3 py-1.5 rounded-full text-sm">
-                  <CheckCircle className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-foreground font-medium">{item}</span>
-                </div>
-              ))}
             </div>
           </div>
-        </ScrollAnimation>
+        </motion.div>
       </div>
     </section>
   );

@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { FinalExam, AgeGroup } from "@/lib/types";
+import { XP_REWARDS, ZAPCOIN_REWARDS } from "@/lib/gamification";
 import { AGE_GROUP_LABELS, NEXT_AGE_GROUP } from "@/lib/types";
 import { CelebrationOverlay } from "@/components/gamification/CelebrationOverlay";
 
@@ -29,7 +30,7 @@ import { NumericInputMission } from "@/components/dashboard/mission-types/numeri
 import { TextInputMission } from "@/components/dashboard/mission-types/text-input-mission";
 import { MatchingMission } from "@/components/dashboard/mission-types/matching-mission";
 
-const PASS_THRESHOLD = 7; // 7/10 to pass
+const PASS_PERCENT = 0.7; // 70% to pass
 
 type ExamState = "playing" | "reviewing" | "passed" | "failed";
 
@@ -92,7 +93,8 @@ export function FinalExamPlayer({
   const finishExam = async (finalResults: QuestionResult[]) => {
     setSubmitting(true);
     const correctCount = finalResults.filter((r) => r.isCorrect).length;
-    const passed = correctCount >= PASS_THRESHOLD;
+    const passThreshold = Math.ceil(questions.length * PASS_PERCENT);
+    const passed = correctCount >= passThreshold;
     const totalPoints = correctCount * (questions[0]?.points_reward ?? 50);
 
     const supabase = createClient();
@@ -106,32 +108,32 @@ export function FinalExamPlayer({
       passed,
     });
 
-    if (passed && nextAgeGroup) {
-      // Promote to next age group
-      await supabase.rpc("promote_child_age_group", {
-        p_child_id: childId,
-      });
-
-      // Add bonus points
-      await supabase
+    if (passed) {
+      // Add bonus points (increment, not overwrite)
+      const { data: childData } = await supabase
         .from("children")
-        .update({ total_points: totalPoints })
+        .select("total_points, xp, zapcoins")
         .eq("id", childId)
-        .select("total_points")
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            supabase
-              .from("children")
-              .update({ total_points: (data.total_points ?? 0) + totalPoints })
-              .eq("id", childId);
-          }
-        });
+        .single();
 
-      setShowCelebration(true);
-      setState("passed");
-    } else if (passed && !nextAgeGroup) {
-      // Already at max level but passed
+      if (childData) {
+        await supabase
+          .from("children")
+          .update({
+            total_points: (childData.total_points ?? 0) + totalPoints,
+            xp: (childData.xp ?? 0) + XP_REWARDS.exam_pass,
+            zapcoins: (childData.zapcoins ?? 0) + ZAPCOIN_REWARDS.exam_pass,
+          })
+          .eq("id", childId);
+      }
+
+      if (nextAgeGroup) {
+        // Promote to next age group
+        await supabase.rpc("promote_child_age_group", {
+          p_child_id: childId,
+        });
+      }
+
       setShowCelebration(true);
       setState("passed");
     } else {
@@ -265,7 +267,7 @@ export function FinalExamPlayer({
                 </span>{" "}
                 questões. Precisa de pelo menos{" "}
                 <span className="font-bold text-primary-500">
-                  {PASS_THRESHOLD}
+                  {Math.ceil(questions.length * PASS_PERCENT)}
                 </span>{" "}
                 para passar.
               </p>

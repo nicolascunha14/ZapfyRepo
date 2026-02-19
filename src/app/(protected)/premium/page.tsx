@@ -41,25 +41,25 @@ export default function PremiumPage() {
             Assinatura Premium em pausa
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-            Estamos preparando novidades incriveis para o plano Premium!
-            Em breve voce podera assinar e desbloquear todo o potencial
-            da educacao financeira do seu filho.
+            Estamos preparando novidades incríveis para o plano Premium!
+            Em breve você poderá assinar e desbloquear todo o potencial
+            da educação financeira do seu filho.
           </p>
         </div>
 
         <Card className="border-amber-200 bg-amber-50/50">
           <CardContent className="py-5 px-5 space-y-3">
             <p className="font-display font-bold text-sm text-amber-800">
-              O que vem por ai:
+              O que vem por aí:
             </p>
             <ul className="space-y-2 text-sm text-amber-700">
               <li className="flex items-start gap-2">
                 <Crown size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                Todas as faixas etarias desbloqueadas
+                Todas as faixas etárias desbloqueadas
               </li>
               <li className="flex items-start gap-2">
                 <Crown size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                +20% XP e Zapcoins bonus em todas as missoes
+                +20% XP e Zapcoins bônus em todas as missões
               </li>
               <li className="flex items-start gap-2">
                 <Crown size={14} className="text-amber-500 shrink-0 mt-0.5" />
@@ -67,7 +67,7 @@ export default function PremiumPage() {
               </li>
               <li className="flex items-start gap-2">
                 <Crown size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                Painel dos pais completo com graficos
+                Painel dos pais completo com gráficos
               </li>
             </ul>
           </CardContent>
@@ -76,7 +76,7 @@ export default function PremiumPage() {
         <div className="flex items-center justify-center gap-2 bg-primary-50 rounded-xl px-4 py-3 text-sm text-primary-700">
           <Bell size={16} />
           <span className="font-medium">
-            Avisaremos quando o Premium estiver disponivel!
+            Avisaremos quando o Premium estiver disponível!
           </span>
         </div>
       </div>
