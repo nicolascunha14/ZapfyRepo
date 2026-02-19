@@ -31,6 +31,7 @@ import { TrueFalseMission } from "@/components/dashboard/mission-types/true-fals
 import { NumericInputMission } from "@/components/dashboard/mission-types/numeric-input-mission";
 import { TextInputMission } from "@/components/dashboard/mission-types/text-input-mission";
 import { MatchingMission } from "@/components/dashboard/mission-types/matching-mission";
+import { FamilyMission } from "@/components/dashboard/mission-types/family-mission";
 
 type MissionState = "playing" | "result" | "levelup" | "blocked";
 
@@ -108,8 +109,22 @@ export function NewMissionPlayer({
         attemptNumber: attemptCountRef.current,
         timeSpentSeconds,
         ageGroup,
+        missionType: mission.mission_type,
         supabase,
       });
+
+      // For family missions, record parental confirmation
+      if (mission.mission_type === "family_mission" && isCorrect) {
+        await supabase.from("family_confirmations").upsert(
+          {
+            child_id: childId,
+            mission_id: mission.id,
+            child_response: userAnswer,
+            parent_confirmed_at: new Date().toISOString(),
+          },
+          { onConflict: "child_id,mission_id" }
+        );
+      }
 
       // Update local state
       setHearts(result.newHearts);
@@ -338,6 +353,8 @@ function MissionRenderer({
       return <TextInputMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
     case "matching":
       return <MatchingMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
+    case "family_mission":
+      return <FamilyMission content={content} correctAnswer={correctAnswer} onAnswer={onAnswer} disabled={disabled} />;
     default:
       return <p>Tipo de missão desconhecido</p>;
   }

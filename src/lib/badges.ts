@@ -29,6 +29,7 @@ export type BadgeContext = {
   completed: number;
   totalMissions: number;
   streak: number;
+  founderMissionsCompleted?: number;
 };
 
 export type BadgeResult = BadgeDef & { unlocked: boolean };
@@ -128,6 +129,17 @@ export const BADGES: BadgeDef[] = [
     color: "text-pink-500",
     bg: "from-pink-100 to-pink-50",
     check: (ctx) => ctx.points >= 500,
+  },
+
+  // Founder module
+  {
+    id: "founder_seal",
+    name: "Fundador Zapfy",
+    description: "Completou a Jornada Prática em Família",
+    icon: Medal,
+    color: "text-amber-600",
+    bg: "from-amber-400 to-orange-500",
+    check: (ctx) => (ctx.founderMissionsCompleted ?? 0) >= 10,
   },
 
   // Streak milestones

@@ -25,6 +25,7 @@ export const XP_REWARDS = {
   chapter_complete:    500,
   streak_daily:        50,
   exam_pass:           2000,
+  family_mission:      150,
 };
 
 export const ZAPCOIN_REWARDS = {
@@ -73,6 +74,8 @@ export async function updateStreak(childId: string, supabase: any) {
     .select('streak_current, streak_max, last_played_at, streak_freeze_available')
     .eq('id', childId)
     .single();
+
+  if (!child) return { streakUpdated: false, newStreak: 0, usedFreeze: false };
 
   const now = new Date();
   const today = new Date(now.toDateString());
@@ -157,6 +160,12 @@ export async function checkAndAwardBadges(childId: string, supabase: any) {
   const completedChapters = progress?.length ?? 0;
   const daysSinceJoined = (Date.now() - new Date(child.created_at).getTime()) / (1000 * 60 * 60 * 24);
 
+  const { data: founderConfirmations } = await supabase
+    .from('family_confirmations')
+    .select('id', { count: 'exact' })
+    .eq('child_id', childId);
+  const founderCompleted = founderConfirmations?.length ?? 0;
+
   const checks = [
     { slug: 'first_mission',  condition: totalMissions >= 1 },
     { slug: 'missions_10',    condition: totalMissions >= 10 },
@@ -168,9 +177,12 @@ export async function checkAndAwardBadges(childId: string, supabase: any) {
     { slug: 'streak_30',      condition: child.streak_current >= 30 },
     { slug: 'streak_100',     condition: child.streak_current >= 100 },
     { slug: 'one_month',      condition: daysSinceJoined >= 30 },
+    { slug: 'founder_seal',   condition: founderCompleted >= 10 },
   ];
 
   const newBadges: string[] = [];
+  let accumulatedXP = 0;
+  let accumulatedZapcoins = 0;
 
   for (const check of checks) {
     if (!check.condition || earnedSlugs.includes(check.slug)) continue;
@@ -187,15 +199,20 @@ export async function checkAndAwardBadges(childId: string, supabase: any) {
       .from('child_badges')
       .insert({ child_id: childId, badge_id: badge.id });
 
+    accumulatedXP += badge.xp_reward ?? 0;
+    accumulatedZapcoins += badge.zapcoin_reward ?? 0;
+    newBadges.push(check.slug);
+  }
+
+  // Apply all badge rewards at once to avoid overwrite race
+  if (accumulatedXP > 0 || accumulatedZapcoins > 0) {
     await supabase
       .from('children')
       .update({
-        xp: child.xp + badge.xp_reward,
-        zapcoins: child.zapcoins + badge.zapcoin_reward,
+        xp: child.xp + accumulatedXP,
+        zapcoins: child.zapcoins + accumulatedZapcoins,
       })
       .eq('id', childId);
-
-    newBadges.push(check.slug);
   }
 
   return newBadges;
@@ -392,6 +409,7 @@ interface CompleteMissionParams {
   attemptNumber: number;
   timeSpentSeconds: number;
   ageGroup: string;
+  missionType?: string;
   supabase: any;
 }
 
@@ -403,6 +421,7 @@ export async function completeMission({
   attemptNumber,
   timeSpentSeconds,
   ageGroup,
+  missionType,
   supabase,
 }: CompleteMissionParams) {
 
@@ -416,8 +435,14 @@ export async function completeMission({
   const premium = await isPremiumActive(childId, supabase);
 
   // 2. XP e Zapcoins ganhos (premium: +20% XP, +2 zapcoins)
-  const xpMap: Record<number, number> = { 1: 100, 2: 70 };
-  const baseXP = isCorrect ? (xpMap[attemptNumber] ?? 50) : 0;
+  // Family missions always give flat XP regardless of attempt number
+  let baseXP: number;
+  if (missionType === 'family_mission') {
+    baseXP = XP_REWARDS.family_mission;
+  } else {
+    const xpMap: Record<number, number> = { 1: 100, 2: 70 };
+    baseXP = isCorrect ? (xpMap[attemptNumber] ?? 50) : 0;
+  }
   const xpEarned = premium ? Math.round(baseXP * 1.2) : baseXP;
   const zapcoinsEarned = isCorrect ? (premium ? 7 : 5) : 0;
 
@@ -427,7 +452,10 @@ export async function completeMission({
     new Date(child.hearts_last_updated),
     ageGroup
   );
-  const newHearts = isCorrect ? currentHearts : Math.max(0, currentHearts - 1);
+  // Family missions never cause heart loss (always isCorrect: true, but guard anyway)
+  const newHearts = (isCorrect || missionType === 'family_mission')
+    ? currentHearts
+    : Math.max(0, currentHearts - 1);
   const config = HEARTS_CONFIG[ageGroup] ?? HEARTS_CONFIG['10-12'];
   const isBlocked = newHearts === 0 && config.block_on_zero;
 
@@ -495,9 +523,9 @@ export async function completeMission({
             .from('missions')
             .select('*', { count: 'exact', head: true })
             .eq('chapter_id', chId)
-            .in('mission_type', ['quiz', 'true_false', 'numeric_input', 'text_input', 'matching']);
+            .in('mission_type', ['quiz', 'true_false', 'numeric_input', 'text_input', 'matching', 'family_mission']);
 
-          const isChapterComplete = newCompleted >= (totalChapterMissions ?? 10);
+          const isChapterComplete = totalChapterMissions != null && totalChapterMissions > 0 && newCompleted >= totalChapterMissions;
 
           await supabase
             .from('user_progress')
@@ -551,11 +579,6 @@ export async function completeMission({
 
   // 9. Verificar badges
   const newBadges = await checkAndAwardBadges(childId, supabase);
-
-  // Badge de velocidade
-  if (isCorrect && timeSpentSeconds < 10) {
-    newBadges.push('speed_demon');
-  }
 
   return {
     isCorrect,

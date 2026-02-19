@@ -1,6 +1,6 @@
 export type AgeGroup = "7-9" | "10-12" | "13-15";
 
-export type MissionType = "quiz" | "numeric_input" | "text_input" | "true_false" | "matching";
+export type MissionType = "quiz" | "numeric_input" | "text_input" | "true_false" | "matching" | "family_mission";
 
 export type ChapterStatus = "locked" | "unlocked" | "in_progress" | "completed";
 
