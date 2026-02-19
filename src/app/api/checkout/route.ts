@@ -1,12 +1,6 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
 export async function POST() {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
@@ -14,6 +8,13 @@ export async function POST() {
       { status: 500 }
     );
   }
+
+  // Initialize inside the handler so env vars are available at runtime (not build time)
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
   if (!process.env.STRIPE_PRESALE_PRICE_ID) {
     return NextResponse.json(
