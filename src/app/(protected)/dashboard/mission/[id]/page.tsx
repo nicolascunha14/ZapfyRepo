@@ -127,6 +127,8 @@ export default async function MissionPage({
   const totalMissions = chapterMissions?.length ?? 10;
 
   // Find next chapter (if this is the last mission of the chapter)
+  // Don't check lock status — the unlock_next_chapter trigger fires
+  // after mission completion, before the client-side redirect happens.
   let nextChapterId: string | null = null;
   if (!nextMissionId) {
     const { data: currentChapter } = await supabase
@@ -145,19 +147,7 @@ export default async function MissionPage({
         .limit(1)
         .single();
 
-      if (nextChapter) {
-        // Check if user has progress (unlocked) for the next chapter
-        const { data: nextProgress } = await supabase
-          .from("user_progress")
-          .select("status")
-          .eq("child_id", child.id)
-          .eq("chapter_id", nextChapter.id)
-          .single();
-
-        if (nextProgress && nextProgress.status !== "locked") {
-          nextChapterId = nextChapter.id;
-        }
-      }
+      nextChapterId = nextChapter?.id ?? null;
     }
   }
 
