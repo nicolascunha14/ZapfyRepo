@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -28,10 +29,22 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     if (body?.email && typeof body.email === "string" && body.email.includes("@")) {
-      customerEmail = body.email;
+      customerEmail = body.email.trim().toLowerCase();
     }
   } catch {
     // body is optional
+  }
+
+  // Save lead to Supabase (upsert so duplicate emails don't error)
+  if (customerEmail && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    await supabase
+      .from("presale_leads")
+      .upsert({ email: customerEmail, source: "pre-venda" }, { onConflict: "email" });
+    // Ignore errors — checkout still proceeds even if lead save fails
   }
 
   const session = await stripe.checkout.sessions.create({
