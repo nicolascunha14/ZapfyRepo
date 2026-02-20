@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Nunito, Montserrat } from "next/font/google";
-import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -40,9 +39,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <head>
         {/* Google Tag Manager */}
-        <Script
-          id="gtm-script"
-          strategy="beforeInteractive"
+        <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
